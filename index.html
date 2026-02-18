@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiz Pro v19 - Giriş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-700">
+        
+        <div class="text-center mb-10">
+            <div class="bg-blue-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/50">
+                <i class="fas fa-chart-line text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight">Analiz Pro <span class="text-blue-500 underline decoration-2 underline-offset-4">v19</span></h1>
+            <p class="text-slate-400 mt-2">Öğrenci Tanıma Sistemi</p>
+        </div>
+
+        <form class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium mb-2 text-slate-300">Öğrenci No / Kullanıcı Adı</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Örn: 12345">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2 text-slate-300">Tek Kullanımlık Şifre</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                        <i class="fas fa-key"></i>
+                    </span>
+                    <input type="password" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition duration-300 transform active:scale-95">
+                Sisteme Giriş Yap
+            </button>
+        </form>
+
+        <p class="text-center text-slate-500 text-xs mt-8">
+            &copy; 2026 Analiz Pro v19 - Tüm Hakları Saklıdır.
+        </p>
+    </div>
+
+</body>
+</html>

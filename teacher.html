@@ -9,101 +9,89 @@
     <style>
         #cameraArea { z-index: 9999 !important; }
         video { object-fit: cover; background: #000; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
+        .answer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 12px; }
+        .opt-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #334155; font-size: 11px; display: flex; items-center; justify-content: center; cursor: pointer; transition: all 0.2s; background: #1e293b; }
+        .opt-btn.active { background: #10b981; border-color: #10b981; color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(16,185,129,0.4); }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen">
+<body class="bg-slate-950 text-white font-sans min-h-screen">
 
-    <nav class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50 shadow-xl">
+    <nav class="bg-slate-900/80 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="bg-emerald-500/20 p-2 rounded-lg">
-                    <i class="fas fa-layer-group text-emerald-500 text-xl"></i>
+                <div class="bg-emerald-500 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fas fa-qrcode text-white text-xl"></i>
                 </div>
-                <span class="font-bold text-xl uppercase tracking-tighter">ÖĞRETMEN <span class="text-emerald-500 font-black">PORTAL</span></span>
+                <span class="font-black text-xl tracking-tighter uppercase italic">ANALİZ <span class="text-emerald-500 font-normal">PRO</span></span>
             </div>
-            <button onclick="location.href='index.html'" class="text-slate-400 hover:text-red-400 transition-all text-sm flex items-center gap-2">
-                <i class="fas fa-power-off"></i> Çıkış
-            </button>
+            <div class="flex items-center gap-6">
+                <span id="systemStatus" class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 uppercase">GitHub Live Mode</span>
+                <button onclick="location.href='index.html'" class="text-slate-400 hover:text-red-400 transition-all"><i class="fas fa-power-off"></i></button>
+            </div>
         </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto p-6">
+    <div class="max-w-6xl mx-auto p-6 space-y-8">
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] uppercase font-bold mb-1">Okunan Kağıt</p>
-                    <p class="text-3xl font-black text-emerald-500" id="counter">0</p>
-                </div>
-                <i class="fas fa-file-signature text-2xl text-slate-700"></i>
-            </div>
-            <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] uppercase font-bold mb-1">Sınıf Başarısı</p>
-                    <p class="text-3xl font-black text-blue-500">%--</p>
-                </div>
-                <i class="fas fa-chart-line text-2xl text-slate-700"></i>
-            </div>
-            <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] uppercase font-bold mb-1">Sistem Durumu</p>
-                    <p class="text-sm font-bold text-emerald-400">Aktif & SaaS v19</p>
-                </div>
-                <i class="fas fa-server text-2xl text-slate-700"></i>
-            </div>
-        </div>
-
-        <div class="bg-slate-800 rounded-[3rem] border border-slate-700 shadow-2xl overflow-hidden mb-10">
-            <div class="p-8 border-b border-slate-700 bg-slate-800/30">
-                <h2 class="text-xl font-bold flex items-center gap-3 italic">
-                    <i class="fas fa-microchip text-emerald-500"></i> SINAV TANIMLAMA VE ANALİZ MOTORU
-                </h2>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div class="space-y-6">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-[0.2em]">Sınav Adı</label>
-                        <input type="text" id="examName" placeholder="Örn: 10-A Matematik 2. Yazılı" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-emerald-500 outline-none transition">
-                    </div>
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-card p-8 rounded-[2.5rem] shadow-2xl">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+                        <i class="fas fa-cog text-emerald-500"></i> Sınav Konfigürasyonu
+                    </h2>
                     
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-[0.2em]">Soru Sayısı</label>
-                            <select id="questionCount" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-4 focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-widest">Sınav Adı</label>
+                            <input type="text" id="examName" placeholder="Örn: 8-A Matematik 1. Yazılı" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-widest">Soru Sayısı</label>
+                            <select id="questionCount" onchange="generateAnswerKeys()" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-4 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
                                 <option value="20">20 Soru</option>
                                 <option value="40">40 Soru</option>
                                 <option value="100">100 Soru</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-[0.2em]">Ders</label>
-                            <select class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-4 focus:ring-2 focus:ring-emerald-500 outline-none transition text-slate-400">
-                                <option>Seçiniz...</option>
-                                <option>Matematik</option>
-                                <option>Türkçe</option>
-                                <option>Fen Bilimleri</option>
-                            </select>
-                        </div>
                     </div>
 
-                    <div class="p-6 bg-slate-900/50 rounded-3xl border border-dashed border-slate-700">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-4 block tracking-[0.2em]">Cevap Anahtarı Girişi</label>
-                        <textarea id="answerKey" placeholder="Örn: 1.A, 2.B, 3.C..." class="w-full bg-transparent border-0 outline-none h-24 text-sm text-emerald-500 font-mono resize-none" spellcheck="false"></textarea>
+                    <div class="mt-8">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-4 block tracking-widest text-center">Doğru Cevap Anahtarı (Mühürleme)</label>
+                        <div id="dynamicKeys" class="answer-grid bg-slate-900/40 p-6 rounded-[2rem] border border-slate-800/50 max-h-[350px] overflow-y-auto custom-scrollbar">
+                            </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="flex flex-col items-center justify-center bg-slate-900/30 rounded-[2.5rem] border border-slate-700 p-8">
-                    <div class="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
-                        <i class="fas fa-expand-arrows-alt text-3xl text-emerald-500"></i>
+            <div class="space-y-6">
+                <div class="glass-card p-8 rounded-[2.5rem] border-2 border-emerald-500/20 text-center group hover:border-emerald-500/50 transition-all">
+                    <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-camera text-2xl text-emerald-500"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-2">Optik Okumayı Başlat</h3>
-                    <p class="text-slate-500 text-xs text-center mb-8">Formu çerçeveye hizaladığınızda analiz motoru otomatik olarak sonuçları mühürleyecektir.</p>
-                    
-                    <button onclick="kamerayiAc()" class="w-full bg-emerald-600 hover:bg-emerald-400 text-white font-bold py-5 rounded-[1.5rem] shadow-2xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-3">
-                        <i class="fas fa-camera"></i> TARAYICIYI BAŞLAT
+                    <h3 class="font-bold text-lg mb-2">Hızlı Kamera</h3>
+                    <p class="text-slate-500 text-xs mb-6">Tekil kağıtları QR kod ile anında mühürle.</p>
+                    <button onclick="kamerayiAc()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
+                        TARAYICIYI AÇ
                     </button>
+                </div>
+
+                <div class="glass-card p-8 rounded-[2.5rem] border-2 border-blue-500/10 text-center group hover:border-blue-500/50 transition-all">
+                    <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-file-upload text-2xl text-blue-500"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Toplu Yükleme</h3>
+                    <p class="text-slate-500 text-xs mb-6">Fotokopi taranmış PDF dosyasını mühürle.</p>
+                    <label class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 block cursor-pointer">
+                        PDF/DOSYA SEÇ
+                        <input type="file" class="hidden" accept=".pdf,image/*" onchange="dosyaSecildi(this)">
+                    </label>
+                </div>
+
+                <div class="bg-slate-900/80 p-6 rounded-3xl border border-slate-800 text-center">
+                    <p class="text-slate-500 text-[10px] font-bold uppercase mb-1">Mevcut Oturumda Okunan</p>
+                    <p id="counter" class="text-4xl font-black text-white">0</p>
                 </div>
             </div>
         </div>
@@ -111,13 +99,13 @@
 
     <div id="cameraArea" class="hidden fixed inset-0 bg-black flex flex-col items-center justify-center">
         <video id="video" class="w-full h-full absolute inset-0" autoplay playsinline></video>
-        <div class="relative z-10 flex flex-col items-center w-full h-full">
-            <div class="mt-10 bg-slate-900/90 px-6 py-2 rounded-full border border-emerald-500 text-emerald-500 font-mono text-xs tracking-widest uppercase">
-                SaaS Engine v19.4.0 Analiz Modu
+        <div class="relative z-10 flex flex-col items-center w-full h-full p-8">
+            <div class="bg-slate-900/90 px-6 py-2 rounded-full border border-emerald-500/50 text-emerald-500 font-mono text-[10px] tracking-[0.3em] uppercase">
+                SAAS Engine v19 - QR Watchdog Aktif
             </div>
             
             <div class="flex-grow flex items-center justify-center w-full">
-                <div class="w-72 h-96 border-2 border-emerald-500/30 rounded-3xl relative shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+                <div id="focusFrame" class="w-72 h-96 border-2 border-white/20 rounded-3xl relative transition-all duration-500 shadow-[0_0_100px_rgba(0,0,0,0.8)]">
                     <div class="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-emerald-500"></div>
                     <div class="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-emerald-500"></div>
                     <div class="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-emerald-500"></div>
@@ -125,13 +113,13 @@
                 </div>
             </div>
 
-            <div class="mb-14 flex items-center space-x-12">
+            <div class="mb-10 flex items-center space-x-12">
                 <button onclick="kamerayiKapat()" class="w-16 h-16 bg-slate-900/80 text-white rounded-full flex items-center justify-center border border-slate-700">
                     <i class="fas fa-times"></i>
                 </button>
                 <button onclick="fotografCek()" class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-8 border-emerald-500/20 shadow-2xl active:scale-90 transition-all">
-                    <div class="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-inner">
-                        <i class="fas fa-bolt text-white text-xs"></i>
+                    <div class="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-inner text-white">
+                        <i class="fas fa-bolt"></i>
                     </div>
                 </button>
                 <div class="w-16"></div>
@@ -143,48 +131,76 @@
 
     <script>
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
         const cameraArea = document.getElementById('cameraArea');
+        let selectedAnswers = {};
 
-        async function kamerayiAc() {
-            const exam = document.getElementById('examName').value;
-            if(!exam) { alert('Lütfen önce sınav adını giriniz!'); return; }
-
-            const constraints = { video: { facingMode: "environment" }, audio: false };
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    video.play();
-                    cameraArea.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                };
-            } catch (err) {
-                alert("Kamera hatası: " + err.name);
+        // CEVAP ANAHTARI GENERATOR
+        function generateAnswerKeys() {
+            const count = document.getElementById('questionCount').value;
+            const container = document.getElementById('dynamicKeys');
+            container.innerHTML = '';
+            selectedAnswers = {};
+            
+            for(let i=1; i<=count; i++) {
+                let div = document.createElement('div');
+                div.className = 'flex flex-col items-center gap-2 p-3 bg-slate-800/40 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all';
+                div.innerHTML = `<span class="text-[10px] text-slate-500 font-black tracking-widest">${i}</span>
+                                 <div class="flex flex-col gap-2">
+                                    ${['A','B','C','D','E'].map(opt => `<div class="opt-btn" id="q${i}${opt}" onclick="selectOpt(${i}, '${opt}')">${opt}</div>`).join('')}
+                                 </div>`;
+                container.appendChild(div);
             }
         }
 
+        function selectOpt(q, opt) {
+            ['A','B','C','D','E'].forEach(o => document.getElementById(`q${q}${o}`).classList.remove('active'));
+            document.getElementById(`q${q}${opt}`).classList.add('active');
+            selectedAnswers[q] = opt;
+        }
+
+        // KAMERA MOTORU
+        async function kamerayiAc() {
+            if(!document.getElementById('examName').value) { alert('Lütfen sınav adını giriniz!'); return; }
+            if(Object.keys(selectedAnswers).length < document.getElementById('questionCount').value) {
+                alert('Mühürleme hatası: Tüm cevapları işaretlemediniz!'); return;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = stream;
+                cameraArea.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } catch (err) { alert("Kamera Başlatılamadı!"); }
+        }
+
         function kamerayiKapat() {
-            const stream = video.srcObject;
-            if (stream) { stream.getTracks().forEach(track => track.stop()); }
-            video.srcObject = null;
+            if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
             cameraArea.classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
 
         function fotografCek() {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // QR KOD KONTROL SİMÜLASYONU
+            const focusFrame = document.getElementById('focusFrame');
+            focusFrame.classList.add('border-emerald-500', 'scale-105');
             
-            // SAAS MÜHÜRLEME SİMÜLASYONU
-            alert(document.getElementById('examName').value + ' analizi mühürlendi!');
-            kamerayiKapat();
-            
-            let current = parseInt(document.getElementById('counter').innerText);
-            document.getElementById('counter').innerText = current + 1;
+            setTimeout(() => {
+                alert('QR Doğrulandı: ' + document.getElementById('examName').value + ' mühürleniyor...');
+                document.getElementById('counter').innerText = parseInt(document.getElementById('counter').innerText) + 1;
+                focusFrame.classList.remove('border-emerald-500', 'scale-105');
+                kamerayiKapat();
+            }, 600);
         }
+
+        function dosyaSecildi(input) {
+            if(input.files && input.files[0]) {
+                alert(input.files[0].name + ' yüklendi. Arka planda QR ve cevap analizi yapılıyor...');
+                // Simülasyon gereği sayacı artır
+                document.getElementById('counter').innerText = parseInt(document.getElementById('counter').innerText) + 5;
+            }
+        }
+
+        // Başlangıç
+        generateAnswerKeys();
     </script>
 </body>
 </html>

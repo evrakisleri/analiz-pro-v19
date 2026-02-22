@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sınav Yönetimi - Analiz Pro v19</title>
+    <title>Analiz Pro v19 - Profesyonel Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .exam-card.active { border-color: #10b981; background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
-        .answer-dot { width: 32px; height: 32px; border-radius: 10px; border: 1px solid #334155; font-size: 10px; display: flex; items-center; justify-content: center; cursor: pointer; transition: all 0.2s; background: #0f172a; color: #475569; }
-        .answer-dot:hover { border-color: #10b981; color: #10b981; }
-        .answer-dot.active { background: #10b981; border-color: #10b981; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        #cameraArea { z-index: 9999; }
-        .scanner-line { height: 2px; background: #10b981; width: 100%; position: absolute; top: 0; left: 0; box-shadow: 0 0 15px #10b981; animation: scan 2s infinite linear; }
+        .exam-card.active { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .answer-dot { width: 32px; height: 32px; border-radius: 10px; border: 1px solid #334155; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #0f172a; color: #475569; }
+        .answer-dot.active { background: #10b981; border-color: #10b981; color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(16,185,129,0.4); }
+        #modal { backdrop-filter: blur(12px); z-index: 10002; }
+        .scanner-line { height: 3px; background: #10b981; width: 100%; position: absolute; top: 0; left: 0; box-shadow: 0 0 20px #10b981; animation: scan 2s infinite linear; }
         @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-        .toast { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .toast { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
-<body class="bg-[#0b0f1a] text-slate-300 min-h-screen font-sans">
+<body class="bg-[#080c14] text-slate-300 min-h-screen selection:bg-emerald-500/30">
 
-    <div id="toastContainer" class="fixed top-5 right-5 z-[10000] space-y-3"></div>
+    <div id="toastContainer" class="fixed top-5 right-5 z-[10010] space-y-3"></div>
 
-    <nav class="bg-slate-900/80 border-b border-slate-800 p-4 sticky top-0 backdrop-blur-md z-50">
+    <nav class="bg-slate-900/90 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 p-2 rounded-xl text-white shadow-lg shadow-emerald-500/20"><i class="fas fa-microchip"></i></div>
-                <span class="font-black text-xl tracking-tighter italic">ANALİZ PRO <span class="text-emerald-500 font-normal">v19</span></span>
+                <div class="bg-emerald-500 p-2 rounded-xl text-white shadow-lg shadow-emerald-500/20"><i class="fas fa-microchip text-xl"></i></div>
+                <span class="font-black text-xl italic tracking-tighter uppercase">ANALİZ <span class="text-emerald-500 font-normal">PRO</span></span>
             </div>
             <div class="flex items-center gap-4">
-                <span class="text-[10px] bg-slate-800 text-slate-400 px-3 py-1 rounded-full border border-slate-700">GITHUB PREVIEW MODE</span>
+                <span class="text-[9px] font-bold text-slate-500 border border-slate-800 px-3 py-1 rounded-full tracking-widest">GITHUB / ANALİZ MODU</span>
                 <button onclick="location.href='index.html'" class="text-slate-500 hover:text-red-500 transition-all"><i class="fas fa-power-off"></i></button>
             </div>
         </div>
@@ -38,24 +37,19 @@
     <div class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <div class="lg:col-span-4 space-y-6">
-            <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] px-2">Aktif Sınavlarım</h2>
+            <div class="flex justify-between items-center px-2">
+                <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Sınav Havuzu</h2>
+                <button onclick="openModal()" class="text-[10px] font-black text-emerald-500 hover:text-white transition-colors">
+                    <i class="fas fa-plus-circle mr-1"></i> YENİ OLUŞTUR
+                </button>
+            </div>
             
             <div id="examList" class="space-y-4">
-                <div onclick="selectExam(this, '8-A Matematik', 20)" class="exam-card border border-slate-800 bg-slate-900/50 p-5 rounded-[2rem] cursor-pointer hover:border-slate-600 transition-all group">
+                <div onclick="selectExam(this, '8-A Matematik', 20)" class="exam-card border border-slate-800 bg-slate-900/40 p-5 rounded-[2.5rem] cursor-pointer hover:border-emerald-500/30 transition-all group">
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="font-bold text-white group-hover:text-emerald-400 transition-colors">8-A Matematik</h3>
-                            <p class="text-[10px] text-slate-500 uppercase mt-1 tracking-widest italic">1. Yazılı • 20 Soru</p>
-                        </div>
-                        <i class="fas fa-chevron-right text-slate-800 group-hover:text-emerald-500 transition-all"></i>
-                    </div>
-                </div>
-
-                <div onclick="selectExam(this, '7-C Fen Bilimleri', 40)" class="exam-card border border-slate-800 bg-slate-900/50 p-5 rounded-[2rem] cursor-pointer hover:border-slate-600 transition-all group">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold text-white group-hover:text-emerald-400">7-C Fen Bilimleri</h3>
-                            <p class="text-[10px] text-slate-500 uppercase mt-1 tracking-widest italic">Deneme Sınavı • 40 Soru</p>
+                            <p class="text-[10px] text-slate-500 uppercase mt-1 italic tracking-widest">Dönem 1 • 20 Soru</p>
                         </div>
                         <i class="fas fa-chevron-right text-slate-800 group-hover:text-emerald-500"></i>
                     </div>
@@ -64,160 +58,211 @@
         </div>
 
         <div class="lg:col-span-8">
-            <div id="noSelection" class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-[3rem] text-slate-600">
-                <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4"><i class="fas fa-mouse-pointer"></i></div>
-                <p class="text-sm font-medium">Lütfen analiz edilecek sınavı soldan seçin</p>
+            <div id="noSelection" class="h-80 flex flex-col items-center justify-center border-2 border-dashed border-slate-800/50 rounded-[3rem] text-slate-600">
+                <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mb-6 text-2xl"><i class="fas fa-crosshairs"></i></div>
+                <p class="text-sm font-medium tracking-wide">Analiz başlatmak için bir sınav mühürleyin</p>
             </div>
 
-            <div id="operationCenter" class="hidden space-y-8">
-                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-8 rounded-[3rem] shadow-2xl">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div id="operationCenter" class="hidden space-y-8 animate-in fade-in duration-500">
+                <div class="bg-slate-900 border border-slate-800 p-8 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
                         <div>
                             <h2 id="selectedExamTitle" class="text-3xl font-black text-white italic tracking-tighter">---</h2>
-                            <div class="flex items-center gap-3 mt-2">
-                                <span id="selectedExamMeta" class="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">---</span>
-                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sivas Cumhuriyet Lisesi</span>
-                            </div>
+                            <div id="selectedExamMeta" class="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20 mt-3 inline-block tracking-widest uppercase">---</div>
                         </div>
-                        <div class="flex gap-3">
-                            <button onclick="kamerayiAc()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 py-4 rounded-2xl shadow-lg shadow-emerald-900/40 transition-all flex items-center gap-3 active:scale-95">
+                        <div class="flex gap-4">
+                            <button onclick="kamerayiAc('student')" class="bg-emerald-600 hover:bg-emerald-400 text-white font-black px-10 py-5 rounded-[1.5rem] shadow-xl shadow-emerald-900/40 transition-all active:scale-95 flex items-center gap-3">
                                 <i class="fas fa-camera"></i> TARAYICI
                             </button>
-                            <label class="bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl cursor-pointer transition-all flex items-center gap-3">
-                                <i class="fas fa-upload"></i> PDF
-                                <input type="file" class="hidden" accept=".pdf" onchange="dosyaAnaliz(this)">
+                            <label class="bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-5 rounded-[1.5rem] cursor-pointer flex items-center gap-3 transition-all">
+                                <i class="fas fa-upload text-blue-400"></i> PDF
+                                <input type="file" class="hidden" accept=".pdf">
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-900/50 border border-slate-800 p-8 rounded-[3rem]">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Cevap Anahtarı Mühürleme</h3>
-                        <button onclick="showToast('Optik anahtar tarama modu aktif.', 'info')" class="text-[10px] font-bold text-emerald-500 hover:underline">
-                            <i class="fas fa-magic mr-1"></i> OPTİK FORM İLE OKU
+                <div class="bg-slate-900/50 border border-slate-800 p-8 rounded-[3rem] relative">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Cevap Anahtarı Verileri</h3>
+                        <button onclick="kamerayiAc('key')" class="flex items-center gap-2 text-[10px] font-black text-emerald-500 hover:text-white transition-colors bg-emerald-500/5 px-4 py-2 rounded-full border border-emerald-500/20">
+                            <i class="fas fa-magic"></i> OPTİK FORM İLE OKU
                         </button>
                     </div>
-                    <div id="keyPreview" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-3">
+                    <div id="keyPreview" class="grid grid-cols-5 md:grid-cols-10 gap-4">
                         </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="cameraArea" class="hidden fixed inset-0 bg-black flex flex-col items-center justify-center">
-        <video id="video" class="w-full h-full absolute inset-0 object-cover opacity-50" autoplay playsinline></video>
-        <div class="relative z-10 w-full h-full flex flex-col items-center justify-between p-10">
-            <div class="bg-slate-950/90 px-6 py-2 rounded-full border border-emerald-500/30 text-emerald-400 font-mono text-[10px] tracking-widest">
-                <i class="fas fa-shield-alt mr-2"></i> ANALİZ MODU: <span id="cameraExamTitle" class="font-black italic">---</span>
+    <div id="modal" class="hidden fixed inset-0 flex items-center justify-center p-6 bg-slate-950/90">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[3.5rem] p-10 shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6">
+                <i class="fas fa-plus text-emerald-500 text-2xl"></i>
             </div>
-            
-            <div class="w-72 h-96 border-2 border-white/10 rounded-[2.5rem] relative overflow-hidden">
-                <div class="scanner-line"></div>
-                <div class="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-emerald-500"></div>
-                <div class="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-emerald-500"></div>
-            </div>
-
-            <div id="analizBar" class="hidden w-64 bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden">
-                <div class="bg-emerald-500 h-full w-0 transition-all duration-700" id="progressFill"></div>
-            </div>
-
-            <div class="flex items-center gap-12">
-                <button onclick="kamerayiKapat()" class="w-16 h-16 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all"><i class="fas fa-times"></i></button>
-                <button onclick="fotografCek()" class="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.2)] active:scale-90 transition-all">
-                    <div class="w-16 h-16 border-4 border-emerald-600 rounded-full flex items-center justify-center">
-                         <div class="w-10 h-10 bg-emerald-600 rounded-full"></div>
-                    </div>
-                </button>
-                <div class="w-16"></div>
+            <h2 class="text-2xl font-black text-white italic mb-8 uppercase tracking-tighter">Sınav Tanımla</h2>
+            <div class="space-y-6">
+                <input type="text" id="newExamName" placeholder="Sınav Adı (Örn: 10-C Fizik)" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-5 px-6 outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                <select id="newExamCount" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-5 px-6 outline-none focus:ring-2 focus:ring-emerald-500 appearance-none">
+                    <option value="20">20 Soru Modülü</option>
+                    <option value="40">40 Soru Modülü</option>
+                </select>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="closeModal()" class="flex-1 text-slate-500 font-bold hover:text-white transition-colors">İPTAL</button>
+                    <button onclick="addNewExam()" class="flex-1 bg-emerald-600 text-white font-black py-5 rounded-2xl active:scale-95 shadow-lg shadow-emerald-900/20">MÜHÜRLE</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const toastContainer = document.getElementById('toastContainer');
-        const video = document.getElementById('video');
-        const cameraArea = document.getElementById('cameraArea');
-        let selectedAnswers = {};
+    <div id="cameraArea" class="hidden fixed inset-0 bg-black z-[10005] flex flex-col items-center justify-between py-12 px-6">
+        <video id="video" class="absolute inset-0 w-full h-full object-cover opacity-60" autoplay playsinline></video>
+        
+        <div class="relative bg-slate-950/90 px-8 py-3 rounded-full border border-emerald-500/30 text-emerald-400 font-mono text-[10px] tracking-[0.3em] uppercase">
+            <span id="scanModeLabel">ÖĞRENCİ TARAMA MODU</span>: <span id="cameraTitle" class="font-black italic">---</span>
+        </div>
 
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            const bg = type === 'success' ? 'bg-emerald-600' : 'bg-blue-600';
-            toast.className = `toast ${bg} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10`;
-            toast.innerHTML = `<i class="fas fa-check-circle"></i> <span class="text-xs font-bold">${message}</span>`;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+        <div class="w-72 h-96 border-2 border-white/20 rounded-[3rem] relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+            <div class="scanner-line"></div>
+            <div class="absolute inset-0 border-8 border-black/40"></div>
+        </div>
+
+        <div id="scanLoading" class="hidden relative w-64 bg-slate-900 rounded-full h-1.5 border border-slate-800 overflow-hidden">
+            <div id="scanProgress" class="bg-emerald-500 h-full w-0 transition-all duration-[1.5s]"></div>
+        </div>
+
+        <div class="flex items-center gap-12 relative">
+            <button onclick="kamerayiKapat()" class="w-16 h-16 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <button onclick="fotografCek()" class="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-2xl active:scale-90 transition-all">
+                <div class="w-16 h-16 border-4 border-emerald-600 rounded-full flex items-center justify-center">
+                     <div class="w-10 h-10 bg-emerald-600 rounded-full animate-pulse"></div>
+                </div>
+            </button>
+            <div class="w-16"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'student'; 
+        let currentExamCount = 20;
+        let selectedAnswers = {};
+        const video = document.getElementById('video');
+
+        function showToast(m, type='success') {
+            const t = document.createElement('div');
+            t.className = `toast p-5 rounded-2xl text-white font-bold text-xs shadow-2xl border border-white/10 ${type==='success'?'bg-emerald-600':'bg-blue-600'}`;
+            t.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${m}`;
+            document.getElementById('toastContainer').appendChild(t);
+            setTimeout(() => t.remove(), 3500);
+        }
+
+        function openModal() { document.getElementById('modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        function addNewExam() {
+            const name = document.getElementById('newExamName').value;
+            const count = document.getElementById('newExamCount').value;
+            if(!name) { showToast('Lütfen isim girin!', 'error'); return; }
+            
+            const card = document.createElement('div');
+            card.className = "exam-card border border-slate-800 bg-slate-900/40 p-5 rounded-[2.5rem] cursor-pointer hover:border-emerald-500/30 transition-all group";
+            card.onclick = () => selectExam(card, name, count);
+            card.innerHTML = `<div class="flex justify-between items-center"><div><h3 class="font-bold text-white group-hover:text-emerald-400">${name}</h3><p class="text-[10px] text-slate-500 uppercase mt-1 italic tracking-widest">Özel • ${count} Soru</p></div><i class="fas fa-chevron-right text-slate-800 group-hover:text-emerald-500"></i></div>`;
+            document.getElementById('examList').appendChild(card);
+            closeModal();
+            showToast('Sınav havuzuna eklendi.');
         }
 
         function selectExam(el, title, count) {
             document.querySelectorAll('.exam-card').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
-            
             document.getElementById('noSelection').classList.add('hidden');
             document.getElementById('operationCenter').classList.remove('hidden');
-            
             document.getElementById('selectedExamTitle').innerText = title;
-            document.getElementById('cameraExamTitle').innerText = title;
-            document.getElementById('selectedExamMeta').innerText = `${count} SORU MODÜLÜ`;
+            document.getElementById('cameraTitle').innerText = title;
+            document.getElementById('selectedExamMeta').innerText = `${count} SORU MODÜLÜ AKTİF`;
             
+            currentExamCount = count;
             selectedAnswers = {};
             const preview = document.getElementById('keyPreview');
             preview.innerHTML = '';
             for(let i=1; i<=count; i++) {
-                preview.innerHTML += `
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[8px] text-slate-600 font-bold">${i}</span>
-                        <div id="dot-${i}" onclick="toggleDot(${i})" class="answer-dot">?</div>
-                    </div>`;
+                preview.innerHTML += `<div class="flex flex-col items-center gap-1"><span class="text-[8px] text-slate-600 font-bold">${i}</span><div id="dot-${i}" onclick="toggleDot(${i})" class="answer-dot">?</div></div>`;
             }
-            showToast(`${title} verileri yüklendi.`, 'info');
         }
 
         function toggleDot(id) {
             const dot = document.getElementById(`dot-${id}`);
-            const options = ['A', 'B', 'C', 'D'];
-            let currentIdx = options.indexOf(dot.innerText);
-            let nextIdx = (currentIdx + 1) % options.length;
-            
-            dot.innerText = options[nextIdx];
+            const opts = ['A','B','C','D'];
+            let curr = opts.indexOf(dot.innerText);
+            let next = (curr + 1) % opts.length;
+            dot.innerText = opts[next];
             dot.classList.add('active');
-            selectedAnswers[id] = options[nextIdx];
+            selectedAnswers[id] = opts[next];
         }
 
-        async function kamerayiAc() {
+        async function kamerayiAc(mode) {
+            currentMode = mode;
+            document.getElementById('scanModeLabel').innerText = mode === 'key' ? 'ANAHTAR OKUMA MODU' : 'ÖĞRENCİ TARAMA MODU';
+            document.getElementById('scanModeLabel').className = mode === 'key' ? 'text-yellow-400 font-black' : 'text-emerald-400';
+            
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = stream;
-                cameraArea.classList.remove('hidden');
-            } catch (err) {
-                showToast('Kamera bulunamadı! Lütfen dosya yükleme modunu kullanın.', 'info');
-            }
+                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = s;
+                document.getElementById('cameraArea').classList.remove('hidden');
+            } catch(e) { showToast('Kamera bulunamadı!', 'error'); }
         }
 
         function kamerayiKapat() {
             if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-            cameraArea.classList.add('hidden');
-            document.getElementById('analizBar').classList.add('hidden');
-            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('cameraArea').classList.add('hidden');
+            document.getElementById('scanLoading').classList.add('hidden');
+            document.getElementById('scanProgress').style.width = '0%';
         }
 
         function fotografCek() {
-            const bar = document.getElementById('analizBar');
-            const fill = document.getElementById('progressFill');
+            const bar = document.getElementById('scanLoading');
+            const progress = document.getElementById('scanProgress');
             
             bar.classList.remove('hidden');
-            fill.style.width = '100%';
+            progress.style.width = '100%';
             
             setTimeout(() => {
-                showToast('Optik analiz başarılı. Öğrenci: Ali Yılmaz', 'success');
-                kamerayiKapat();
-            }, 800);
+                if(currentMode === 'key') {
+                    animateAnswerFilling();
+                } else {
+                    showToast('Kağıt okundu: Ali Yılmaz - %85 Başarı');
+                    kamerayiKapat();
+                }
+            }, 1500);
         }
 
-        function dosyaAnaliz(input) {
-            if(input.files[0]) {
-                showToast('PDF Toplu Analiz Başlatıldı...', 'info');
-                setTimeout(() => showToast('45 Kağıt mühürlendi.', 'success'), 2000);
+        // OTOMATİK DOLMA ANİMASYONU
+        function animateAnswerFilling() {
+            kamerayiKapat();
+            showToast('Optik anahtar ayrıştırılıyor, lütfen bekleyin...', 'info');
+            
+            const opts = ['A','B','C','D'];
+            let delay = 0;
+
+            for(let i=1; i<=currentExamCount; i++) {
+                setTimeout(() => {
+                    const randomSik = opts[Math.floor(Math.random() * opts.length)];
+                    const dot = document.getElementById(`dot-${i}`);
+                    if(dot) {
+                        dot.innerText = randomSik;
+                        dot.classList.add('active');
+                        selectedAnswers[i] = randomSik;
+                        // Her doluşta küçük bir ses efekti hissi için console log (opsiyonel)
+                    }
+                    if(i === parseInt(currentExamCount)) {
+                        showToast('Cevap anahtarı mühürlendi ve analiz hazır!');
+                    }
+                }, delay);
+                delay += 70; // Her soru 70ms arayla dolsun (akıcı animasyon)
             }
         }
     </script>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müdür Paneli - Analiz Pro v19</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-white font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-500"><i class="fas fa-user-shield mr-2"></i>Müdür Kontrol Merkezi</h1>
+                <p class="text-slate-400 text-sm">Toplu Öğrenci & Şifre Atama Sistemi</p>
+            </div>
+            <a href="index.html" class="text-slate-400 hover:text-white transition"><i class="fas fa-sign-out-alt"></i> Çıkış</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-file-import text-blue-500 mr-2"></i> Toplu Veri Girişi
+                </h2>
+                <p class="text-xs text-slate-500 mb-4 italic">Format: Her satıra "OkulNo,Şifre" yazın (Örn: 101,A123)</p>
+                
+                <textarea id="rawInput" rows="10" 
+                    class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm font-mono outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="101,sifre1&#10;102,sifre2&#10;103,sifre3"></textarea>
+
+                <button onclick="verileriMühürle()" 
+                    class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition transform active:scale-95">
+                    Sisteme Mühürle (Kaydet)
+                </button>
+            </div>
+
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-users text-green-500 mr-2"></i> Kayıtlı Öğrenciler (<span id="count">0</span>)
+                </h2>
+                <div id="studentList" class="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                    <p class="text-slate-500 text-sm italic text-center mt-10">Henüz veri girilmedi...</p>
+                </div>
+                <button onclick="sistemiSıfırla()" class="w-full mt-4 text-red-500 text-xs hover:underline">
+                    <i class="fas fa-trash-alt mr-1"></i> Tüm Verileri Temizle
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sayfa açıldığında verileri getir
+        window.onload = listeyiGuncelle;
+
+        function verileriMühürle() {
+            const input = document.getElementById('rawInput').value;
+            if (!input.trim()) return alert("Lütfen veri girin!");
+
+            const satirlar = input.split('\n');
+            let yeniOgrenciler = [];
+
+            satirlar.forEach(satir => {
+                const [no, sifre] = satir.split(',');
+                if (no && sifre) {
+                    yeniOgrenciler.push({ no: no.trim(), sifre: sifre.trim() });
+                }
+            });
+
+            // Mevcut verilerle birleştir veya üzerine yaz (Biz üzerine yazıyoruz)
+            localStorage.setItem('analizProV19_Ogrenciler', JSON.stringify(yeniOgrenciler));
+            
+            alert(`✅ ${yeniOgrenciler.length} öğrenci başarıyla mühürlendi!`);
+            listeyiGuncelle();
+            document.getElementById('rawInput').value = ""; // Temizle
+        }
+
+        function listeyiGuncelle() {
+            const veriler = JSON.parse(localStorage.getItem('analizProV19_Ogrenciler')) || [];
+            const container = document.getElementById('studentList');
+            const countLabel = document.getElementById('count');
+            
+            countLabel.innerText = veriler.length;
+            container.innerHTML = "";
+
+            if (veriler.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm italic text-center mt-10">Henüz veri girilmedi...</p>';
+                return;
+            }
+
+            veriler.forEach(ogrenci => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700 text-sm";
+                div.innerHTML = `
+                    <span><i class="fas fa-user-graduate text-blue-400 mr-2"></i> No: <b>${ogrenci.no}</b></span>
+                    <span class="text-slate-400">Şifre: <code class="bg-slate-800 px-2 py-1 rounded text-green-400">${ogrenci.sifre}</code></span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function sistemiSıfırla() {
+            if (confirm("Tüm veriler silinecek! Emin misin kanka?")) {
+                localStorage.removeItem('analizProV19_Ogrenciler');
+                listeyiGuncelle();
+            }
+        }
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</body>
+</html>

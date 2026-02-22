@@ -3,78 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 - Giriş</title>
+    <title>Analiz Pro v19 - Giriş Portalı</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-slate-900 text-white font-sans min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-700">
-        
+    <div class="max-w-4xl w-full">
         <div class="text-center mb-10">
-            <div class="bg-blue-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/50">
-                <i class="fas fa-chart-line text-3xl"></i>
+            <div class="inline-block p-4 rounded-3xl bg-blue-600/10 border border-blue-500/20 mb-4">
+                <i class="fas fa-chart-line text-5xl text-blue-500 animate-pulse"></i>
             </div>
-            <h1 class="text-3xl font-bold tracking-tight">Analiz Pro <span class="text-blue-500 underline decoration-2 underline-offset-4">v19</span></h1>
-            <p class="text-slate-400 mt-2">Öğrenci Tanıma Sistemi</p>
+            <h1 class="text-3xl font-bold tracking-tight">ANALİZ <span class="text-blue-500">PRO</span> v19</h1>
+            <p class="text-slate-400 mt-2">Lütfen giriş yapmak istediğiniz yetki düzeyini seçin</p>
         </div>
 
-        <form class="space-y-6">
-            <div>
-                <label class="block text-sm font-medium mb-2 text-slate-300">Öğrenci No / Kullanıcı Adı</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                        <i class="fas fa-user"></i>
-                    </span>
-                    <input type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Örn: 12345">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div onclick="secimYap('student')" class="group bg-slate-800 p-8 rounded-[2rem] border border-slate-700 hover:border-blue-500 transition-all cursor-pointer transform hover:-translate-y-2 shadow-xl">
+                <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
+                    <i class="fas fa-user-graduate text-2xl text-blue-500 group-hover:text-white"></i>
                 </div>
+                <h2 class="text-xl font-bold mb-2">Öğrenci Girişi</h2>
+                <p class="text-slate-400 text-sm">Sınav analizlerini ve sonuçlarını görüntüle.</p>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-2 text-slate-300">Tek Kullanımlık Şifre</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                        <i class="fas fa-key"></i>
-                    </span>
-                    <input type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••">
+            <div onclick="secimYap('teacher')" class="group bg-slate-800 p-8 rounded-[2rem] border border-slate-700 hover:border-emerald-500 transition-all cursor-pointer transform hover:-translate-y-2 shadow-xl">
+                <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+                    <i class="fas fa-chalkboard-teacher text-2xl text-emerald-500 group-hover:text-white"></i>
                 </div>
+                <h2 class="text-xl font-bold mb-2">Öğretmen Girişi</h2>
+                <p class="text-slate-400 text-sm">Sınıf performansını ve kazanımları takip et.</p>
             </div>
 
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition duration-300 transform active:scale-95">
-                Sisteme Giriş Yap
+            <div onclick="secimYap('admin')" class="group bg-slate-800 p-8 rounded-[2rem] border border-slate-700 hover:border-amber-500 transition-all cursor-pointer transform hover:-translate-y-2 shadow-xl">
+                <div class="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-colors">
+                    <i class="fas fa-user-shield text-2xl text-amber-500 group-hover:text-white"></i>
+                </div>
+                <h2 class="text-xl font-bold mb-2">Yönetici Girişi</h2>
+                <p class="text-slate-400 text-sm">Okul verilerini, şifreleri ve sistemi yönet.</p>
+            </div>
+
+        </div>
+
+        <p class="text-center text-slate-600 text-[10px] mt-12 tracking-widest uppercase">Güvenli Veri İşleme Sistemi &copy; 2026</p>
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 relative shadow-2xl">
+            <button onclick="modalKapat()" class="absolute top-6 right-6 text-slate-500 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
             </button>
-        </form>
+            
+            <div id="modalHeader" class="text-center mb-8">
+                </div>
 
-        <p class="text-center text-slate-500 text-xs mt-8">
-            &copy; 2026 Analiz Pro v19 - Tüm Hakları Saklıdır.
-        </p>
+            <div class="space-y-4">
+                <div class="relative">
+                    <i class="fas fa-id-card absolute left-4 top-4 text-slate-500"></i>
+                    <input type="text" id="userId" placeholder="Numara / Kullanıcı Adı" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 transition text-white">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-4 top-4 text-slate-500"></i>
+                    <input type="password" id="userPass" placeholder="Şifre" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 transition text-white">
+                </div>
+                <button onclick="girisYap()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition transform active:scale-95">
+                    Sisteme Giriş Yap
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const loginForm = document.querySelector('form');
+        let aktifRol = '';
 
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault(); 
+        function secimYap(rol) {
+            aktifRol = rol;
+            const modal = document.getElementById('loginModal');
+            const header = document.getElementById('modalHeader');
+            
+            modal.classList.remove('hidden');
 
-            const inputs = document.querySelectorAll('input');
-            const girilenNo = inputs[0].value.trim();
-            const girilenSifre = inputs[1].value.trim();
-
-            // Müdürün admin.html üzerinden kaydedeceği verileri çekiyoruz
-            const mevcutVeriler = JSON.parse(localStorage.getItem('analizProV19_Ogrenciler')) || [];
-
-            // Eşleşme kontrolü
-            const bulundu = mevcutVeriler.find(ogrenci => ogrenci.no === girilenNo && ogrenci.sifre === girilenSifre);
-
-            if (bulundu) {
-                alert("✅ Giriş Başarılı! Uzay Üssüne Hoş Geldin.");
-                // Giriş başarılı olunca gideceği sayfa
-                window.location.href = "ogrenci_panel.html"; 
+            if(rol === 'student') {
+                header.innerHTML = '<i class="fas fa-user-graduate text-4xl text-blue-500 mb-2"></i><h3 class="text-2xl font-bold">Öğrenci Girişi</h3>';
+            } else if(rol === 'teacher') {
+                header.innerHTML = '<i class="fas fa-chalkboard-teacher text-4xl text-emerald-500 mb-2"></i><h3 class="text-2xl font-bold">Öğretmen Girişi</h3>';
             } else {
-                alert("❌ Hatalı Numara veya Şifre! Lütfen müdürün verdiği tek kullanımlık şifreyi girin.");
+                header.innerHTML = '<i class="fas fa-user-shield text-4xl text-amber-500 mb-2"></i><h3 class="text-2xl font-bold">Yönetici Girişi</h3>';
             }
-        });
-    </script>
+        }
 
+        function modalKapat() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function girisYap() {
+            const id = document.getElementById('userId').value;
+            const pass = document.getElementById('userPass').value;
+
+            if(aktifRol === 'admin') {
+                // Şimdilik basit şifre kontrolü, ileride bunu buluta bağlayacağız
+                if(id === 'admin' && pass === '1234') {
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('Hatalı Yönetici Bilgisi!');
+                }
+            } else if(aktifRol === 'student') {
+                // Müdürün girdiği verileri kontrol et
+                const veriler = JSON.parse(localStorage.getItem('analizProV19_Ogrenciler')) || [];
+                const bulundu = veriler.find(u => u.no === id && u.sifre === pass);
+                
+                if(bulundu) {
+                    alert('Giriş Başarılı! Analizlerinize yönlendiriliyorsunuz...');
+                    // window.location.href = 'analiz.html'; // Burayı sonra yapacağız
+                } else {
+                    alert('Öğrenci numarası veya şifre hatalı!');
+                }
+            } else {
+                alert('Öğretmen modülü çok yakında aktif edilecektir.');
+            }
+        }
+    </script>
 </body>
 </html>

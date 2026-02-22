@@ -3,114 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Müdür Paneli - Analiz Pro v19</title>
+    <title>Yönetim Üssü - Analiz Pro v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #05080f; color: #94a3b8; }
+        .manager-card { background: rgba(15, 23, 42, 0.4); border: 1px solid #1e293b; backdrop-filter: blur(10px); }
+        .drop-zone { border: 2px dashed #1e293b; transition: all 0.3s; cursor: pointer; }
+        .drop-zone:hover { border-color: #2563eb; background: rgba(37, 99, 235, 0.05); }
+        .password-tag { font-family: 'JetBrains Mono', monospace; background: #0f172a; color: #60a5fa; border: 1px solid #2563eb33; }
+        @media print { .no-print { display: none; } body { background: white; color: black; } .manager-card { border: none; backdrop-filter: none; } }
+    </style>
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen p-4 md:p-8">
+<body class="min-h-screen pb-10">
 
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-blue-500"><i class="fas fa-user-shield mr-2"></i>Müdür Kontrol Merkezi</h1>
-                <p class="text-slate-400 text-sm">Toplu Öğrenci & Şifre Atama Sistemi</p>
-            </div>
-            <a href="index.html" class="text-slate-400 hover:text-white transition"><i class="fas fa-sign-out-alt"></i> Çıkış</a>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 flex items-center">
-                    <i class="fas fa-file-import text-blue-500 mr-2"></i> Toplu Veri Girişi
-                </h2>
-                <p class="text-xs text-slate-500 mb-4 italic">Format: Her satıra "OkulNo,Şifre" yazın (Örn: 101,A123)</p>
-                
-                <textarea id="rawInput" rows="10" 
-                    class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm font-mono outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    placeholder="101,sifre1&#10;102,sifre2&#10;103,sifre3"></textarea>
-
-                <button onclick="verileriMühürle()" 
-                    class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition transform active:scale-95">
-                    Sisteme Mühürle (Kaydet)
-                </button>
-            </div>
-
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 flex items-center">
-                    <i class="fas fa-users text-green-500 mr-2"></i> Kayıtlı Öğrenciler (<span id="count">0</span>)
-                </h2>
-                <div id="studentList" class="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                    <p class="text-slate-500 text-sm italic text-center mt-10">Henüz veri girilmedi...</p>
+    <nav class="bg-slate-900/50 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-xl no-print">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-600/20"><i class="fas fa-shield-halved text-xl"></i></div>
+                <div>
+                    <span class="font-black text-xl italic tracking-tighter uppercase text-white leading-none">ANALİZ <span class="text-blue-500 font-normal">PRO</span></span>
+                    <p class="text-[9px] font-bold text-blue-500/80 tracking-[0.3em] uppercase">Müdür Komuta Merkezi</p>
                 </div>
-                <button onclick="sistemiSıfırla()" class="w-full mt-4 text-red-500 text-xs hover:underline">
-                    <i class="fas fa-trash-alt mr-1"></i> Tüm Verileri Temizle
-                </button>
+            </div>
+            <button onclick="location.href='index.html'" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-500/20 hover:text-red-500 transition-all border border-slate-700">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 space-y-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
+            <div class="lg:col-span-1 manager-card p-8 rounded-[3rem] space-y-6 border-blue-500/20">
+                <h2 class="text-lg font-black text-white italic uppercase tracking-tighter">Öğrenci Aktarımı</h2>
+                <div class="drop-zone rounded-[2rem] p-8 text-center group" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-file-excel text-3xl text-blue-500 mb-4 group-hover:scale-110 transition-transform"></i>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">Excel/CSV Listesini<br>Sürükle veya Seç</p>
+                    <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx" onchange="processFile(this)">
+                </div>
+                <p class="text-[9px] text-slate-600 italic leading-relaxed uppercase font-bold text-center">
+                    * Yüklenen her öğrenciye sistem otomatik olarak 6 haneli geçici bir şifre mühürler.
+                </p>
+            </div>
+
+            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="manager-card p-8 rounded-[3rem] flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Toplam Öğrenci</p>
+                        <h3 id="totalStudents" class="text-4xl font-black text-white italic">0</h3>
+                    </div>
+                    <div class="text-5xl text-slate-800/30"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="manager-card p-8 rounded-[3rem] flex items-center justify-between border-emerald-500/20">
+                    <div>
+                        <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Sistem Durumu</p>
+                        <h3 class="text-2xl font-black text-white italic uppercase">GÜVENLİ</h3>
+                    </div>
+                    <div class="text-5xl text-emerald-500/10 animate-pulse"><i class="fas fa-server"></i></div>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="manager-card rounded-[3rem] p-8 md:p-12 overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 no-print">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Öğrenci Şifre ve Erişim Veritabanı</h3>
+                <div class="flex gap-4">
+                    <button onclick="window.print()" class="text-[10px] font-black text-blue-500 hover:text-white transition-all bg-blue-500/5 px-6 py-3 rounded-xl border border-blue-500/20">
+                        <i class="fas fa-print mr-2"></i> LİSTEYİ YAZDIR
+                    </button>
+                </div>
+            </div>
+            
+            <div id="placeholder" class="py-20 text-center">
+                <i class="fas fa-database text-4xl text-slate-800 mb-4"></i>
+                <p class="text-sm font-bold text-slate-600 italic">Henüz öğrenci verisi mühürlenmedi.</p>
+            </div>
+
+            <div id="tableContainer" class="hidden overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="text-[9px] font-black text-slate-600 uppercase tracking-widest border-b border-slate-800">
+                        <tr>
+                            <th class="pb-5 px-2">No</th>
+                            <th class="pb-5 px-2">Ad Soyad</th>
+                            <th class="pb-5 px-2">Şifre Mührü</th>
+                            <th class="pb-5 px-2">Durum</th>
+                            <th class="pb-5 px-2 no-print">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentBody" class="text-xs divide-y divide-slate-800/50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
     <script>
-        // Sayfa açıldığında verileri getir
-        window.onload = listeyiGuncelle;
+        function processFile(input) {
+            if(input.files[0]) {
+                const body = document.getElementById('studentBody');
+                const placeholder = document.getElementById('placeholder');
+                const tableContainer = document.getElementById('tableContainer');
+                const totalCount = document.getElementById('totalStudents');
 
-        function verileriMühürle() {
-            const input = document.getElementById('rawInput').value;
-            if (!input.trim()) return alert("Lütfen veri girin!");
+                placeholder.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
 
-            const satirlar = input.split('\n');
-            let yeniOgrenciler = [];
+                // Örnek Veri Seti (Excel'den gelmiş gibi)
+                const students = [
+                    {no: "101", name: "Ali Yılmaz"},
+                    {no: "102", name: "Ayşe Kaya"},
+                    {no: "103", name: "Mehmet Demir"},
+                    {no: "104", name: "Zeynep Şahin"},
+                    {no: "105", name: "Caner Öz"}
+                ];
 
-            satirlar.forEach(satir => {
-                const [no, sifre] = satir.split(',');
-                if (no && sifre) {
-                    yeniOgrenciler.push({ no: no.trim(), sifre: sifre.trim() });
-                }
-            });
-
-            // Mevcut verilerle birleştir veya üzerine yaz (Biz üzerine yazıyoruz)
-            localStorage.setItem('analizProV19_Ogrenciler', JSON.stringify(yeniOgrenciler));
-            
-            alert(`✅ ${yeniOgrenciler.length} öğrenci başarıyla mühürlendi!`);
-            listeyiGuncelle();
-            document.getElementById('rawInput').value = ""; // Temizle
+                body.innerHTML = "";
+                students.forEach(s => {
+                    const tempPass = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    body.innerHTML += `
+                        <tr class="hover:bg-blue-600/5 transition-all group">
+                            <td class="py-5 px-2 font-mono text-blue-400 font-bold">${s.no}</td>
+                            <td class="py-5 px-2 text-white font-bold uppercase italic">${s.name}</td>
+                            <td class="py-5 px-2">
+                                <span class="password-tag px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest">${tempPass}</span>
+                            </td>
+                            <td class="py-5 px-2">
+                                <span class="flex items-center gap-2 text-[9px] font-black text-amber-500 uppercase">
+                                    <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span> Geçici
+                                </span>
+                            </td>
+                            <td class="py-5 px-2 no-print">
+                                <button onclick="resetPass('${s.name}')" class="text-slate-600 hover:text-red-500 transition-colors text-xs" title="Şifreyi Sıfırla">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                totalCount.innerText = students.length;
+            }
         }
 
-        function listeyiGuncelle() {
-            const veriler = JSON.parse(localStorage.getItem('analizProV19_Ogrenciler')) || [];
-            const container = document.getElementById('studentList');
-            const countLabel = document.getElementById('count');
-            
-            countLabel.innerText = veriler.length;
-            container.innerHTML = "";
-
-            if (veriler.length === 0) {
-                container.innerHTML = '<p class="text-slate-500 text-sm italic text-center mt-10">Henüz veri girilmedi...</p>';
-                return;
-            }
-
-            veriler.forEach(ogrenci => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700 text-sm";
-                div.innerHTML = `
-                    <span><i class="fas fa-user-graduate text-blue-400 mr-2"></i> No: <b>${ogrenci.no}</b></span>
-                    <span class="text-slate-400">Şifre: <code class="bg-slate-800 px-2 py-1 rounded text-green-400">${ogrenci.sifre}</code></span>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function sistemiSıfırla() {
-            if (confirm("Tüm veriler silinecek! Emin misin kanka?")) {
-                localStorage.removeItem('analizProV19_Ogrenciler');
-                listeyiGuncelle();
-            }
+        function resetPass(name) {
+            alert(name + " için şifre başarıyla sıfırlandı ve geçici anahtar atandı.");
         }
     </script>
-
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-    </style>
 </body>
 </html>

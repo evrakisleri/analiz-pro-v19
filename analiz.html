@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Analiz Sistemi - Analiz Pro v19</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-white font-sans min-h-screen">
+
+    <nav class="bg-slate-800 border-b border-slate-700 p-4 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-chart-pie text-blue-500 text-2xl"></i>
+                <span class="font-bold text-xl tracking-tight uppercase">Öğrenci <span class="text-blue-500">Analiz</span></span>
+            </div>
+            <button onclick="location.href='index.html'" class="bg-slate-700 hover:bg-red-600 px-4 py-2 rounded-xl transition-all">
+                Çıkış Yap
+            </button>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto p-6">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 rounded-[2.5rem] mb-8 shadow-xl relative overflow-hidden">
+            <div class="relative z-10">
+                <h1 class="text-3xl font-bold mb-2">Hoş Geldin, Şampiyon! 🚀</h1>
+                <p class="text-blue-100 opacity-80">Sınav performansın ve gelişim analizlerin aşağıdadır.</p>
+            </div>
+            <i class="fas fa-rocket absolute right-[-20px] bottom-[-20px] text-[10rem] opacity-10"></i>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-800 p-8 rounded-[2rem] border border-slate-700">
+                <h2 class="text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-tasks mr-3 text-blue-500"></i> Genel Başarı Grafiği
+                </h2>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span>Matematik</span>
+                            <span class="text-blue-400 font-bold">%85</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full w-[85%] shadow-[0_0_10px_#3b82f6]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span>Türkçe</span>
+                            <span class="text-emerald-400 font-bold">%70</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full w-[70%] shadow-[0_0_10px_#10b981]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-8 rounded-[2rem] border border-slate-700 flex flex-col justify-center">
+                <i class="fas fa-lightbulb text-amber-400 text-4xl mb-4"></i>
+                <h2 class="text-xl font-bold mb-2 text-white">PT Zeka Notu</h2>
+                <p class="text-slate-400 leading-relaxed italic">
+                    "Matematik'te mühürleme hızın çok iyi, ancak Türkçe paragraf sorularında analiz motorunu biraz daha ısıtman gerekiyor. Bir sonraki denemede odaklan!"
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -54,24 +54,17 @@
             <button onclick="modalKapat()" class="absolute top-6 right-6 text-slate-500 hover:text-white">
                 <i class="fas fa-times text-xl"></i>
             </button>
-            
-            <div id="modalHeader" class="text-center mb-8">
-                </div>
-
+            <div id="modalHeader" class="text-center mb-8"></div>
             <div class="space-y-4">
                 <div class="relative">
                     <i class="fas fa-id-card absolute left-4 top-4 text-slate-500"></i>
-                    <input type="text" id="userId" placeholder="Numara / Kullanıcı Adı" 
-                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 transition text-white">
+                    <input type="text" id="userId" placeholder="Numara / Kullanıcı Adı" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 transition text-white">
                 </div>
                 <div class="relative">
                     <i class="fas fa-lock absolute left-4 top-4 text-slate-500"></i>
-                    <input type="password" id="userPass" placeholder="Şifre" 
-                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 transition text-white">
+                    <input type="password" id="userPass" placeholder="Şifre" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500 transition text-white">
                 </div>
-                <button onclick="girisYap()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition transform active:scale-95">
-                    Sisteme Giriş Yap
-                </button>
+                <button onclick="girisYap()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition transform active:scale-95">Sisteme Giriş Yap</button>
             </div>
         </div>
     </div>
@@ -81,11 +74,8 @@
 
         function secimYap(rol) {
             aktifRol = rol;
-            const modal = document.getElementById('loginModal');
+            document.getElementById('loginModal').classList.remove('hidden');
             const header = document.getElementById('modalHeader');
-            
-            modal.classList.remove('hidden');
-
             if(rol === 'student') {
                 header.innerHTML = '<i class="fas fa-user-graduate text-4xl text-blue-500 mb-2"></i><h3 class="text-2xl font-bold">Öğrenci Girişi</h3>';
             } else if(rol === 'teacher') {
@@ -95,36 +85,30 @@
             }
         }
 
-        function modalKapat() {
-            document.getElementById('loginModal').classList.add('hidden');
-        }
+        function modalKapat() { document.getElementById('loginModal').classList.add('hidden'); }
 
         function girisYap() {
             const id = document.getElementById('userId').value;
             const pass = document.getElementById('userPass').value;
 
             if(aktifRol === 'admin') {
-                // Şimdilik basit şifre kontrolü, ileride bunu buluta bağlayacağız
-                if(id === 'admin' && pass === '1234') {
-                    window.location.href = 'admin.html';
-                } else {
-                    alert('Hatalı Yönetici Bilgisi!');
-                }
-            } else if(aktifRol === 'student') {
-                // Müdürün girdiği verileri kontrol et
+                if(id === 'admin' && pass === '1234') { window.location.href = 'admin.html'; }
+                else { alert('Hatalı Yönetici Bilgisi!'); }
+            } 
+            else if(aktifRol === 'teacher') {
+                // Öğretmen için de yönlendirmeyi bağladım
+                window.location.href = 'teacher.html';
+            } 
+            else if(aktifRol === 'student') {
                 const veriler = JSON.parse(localStorage.getItem('analizProV19_Ogrenciler')) || [];
                 const bulundu = veriler.find(u => u.no === id && u.sifre === pass);
-                
                 if(bulundu) {
-                    alert('Giriş Başarılı! Analizlerinize yönlendiriliyorsunuz...');
-                    // window.location.href = 'analiz.html'; // Burayı sonra yapacağız
+                    // İŞTE KRİTİK DEĞİŞİKLİK BURASI:
+                    window.location.href = 'analiz.html'; 
                 } else {
                     alert('Öğrenci numarası veya şifre hatalı!');
                 }
-            } else {
-    // Şimdilik şifre sormuyoruz, direkt panele giriş yapıyoruz
-    window.location.href = 'teacher.html';
-}
+            }
         }
     </script>
 </body>

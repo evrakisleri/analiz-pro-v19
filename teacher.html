@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Öğretmen Paneli - Analiz Pro v19</title>
+    <title>Öğretmen Portalı - Analiz Pro v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         #cameraArea { z-index: 9999 !important; }
         video { object-fit: cover; background: #000; }
-        /* Mobil cihazlarda butonların tıklanabilirliğini garanti et */
-        button { cursor: pointer; touch-action: manipulation; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="bg-slate-900 text-white font-sans min-h-screen">
@@ -19,67 +18,121 @@
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <div class="bg-emerald-500/20 p-2 rounded-lg">
-                    <i class="fas fa-chalkboard-teacher text-emerald-500 text-xl"></i>
+                    <i class="fas fa-layer-group text-emerald-500 text-xl"></i>
                 </div>
-                <span class="font-bold text-xl uppercase tracking-tighter text-emerald-500">ÖĞRETMEN PORTAL</span>
+                <span class="font-bold text-xl uppercase tracking-tighter">ÖĞRETMEN <span class="text-emerald-500 font-black">PORTAL</span></span>
             </div>
-            <button onclick="location.href='index.html'" class="text-slate-400 hover:text-white transition-all text-sm">
-                <i class="fas fa-sign-out-alt"></i> Çıkış
+            <button onclick="location.href='index.html'" class="text-slate-400 hover:text-red-400 transition-all text-sm flex items-center gap-2">
+                <i class="fas fa-power-off"></i> Çıkış
             </button>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-slate-800 p-6 rounded-[2rem] border border-slate-700">
-                <h3 class="text-slate-500 text-xs font-bold uppercase mb-2">Okunan Kağıt</h3>
-                <p class="text-4xl font-black text-emerald-500" id="counter">0</p>
+    <div class="max-w-6xl mx-auto p-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-[10px] uppercase font-bold mb-1">Okunan Kağıt</p>
+                    <p class="text-3xl font-black text-emerald-500" id="counter">0</p>
+                </div>
+                <i class="fas fa-file-signature text-2xl text-slate-700"></i>
             </div>
-            <div class="bg-slate-800 p-6 rounded-[2rem] border border-slate-700">
-                <h3 class="text-slate-500 text-xs font-bold uppercase mb-2">Sınıf Başarısı</h3>
-                <p class="text-4xl font-black text-blue-500">%--</p>
+            <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-[10px] uppercase font-bold mb-1">Sınıf Başarısı</p>
+                    <p class="text-3xl font-black text-blue-500">%--</p>
+                </div>
+                <i class="fas fa-chart-line text-2xl text-slate-700"></i>
             </div>
-            <div class="bg-slate-800 p-6 rounded-[2rem] border border-slate-700">
-                <h3 class="text-slate-500 text-xs font-bold uppercase mb-2">Sistem Durumu</h3>
-                <p class="text-sm font-bold text-emerald-400">Aktif & SaaS</p>
+            <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-[10px] uppercase font-bold mb-1">Sistem Durumu</p>
+                    <p class="text-sm font-bold text-emerald-400">Aktif & SaaS v19</p>
+                </div>
+                <i class="fas fa-server text-2xl text-slate-700"></i>
             </div>
         </div>
 
-        <div class="bg-slate-800 p-10 rounded-[3rem] border border-slate-700 shadow-2xl flex flex-col items-center text-center">
-            <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mb-6">
-                <i class="fas fa-expand-arrows-alt text-3xl text-emerald-500"></i>
+        <div class="bg-slate-800 rounded-[3rem] border border-slate-700 shadow-2xl overflow-hidden mb-10">
+            <div class="p-8 border-b border-slate-700 bg-slate-800/30">
+                <h2 class="text-xl font-bold flex items-center gap-3 italic">
+                    <i class="fas fa-microchip text-emerald-500"></i> SINAV TANIMLAMA VE ANALİZ MOTORU
+                </h2>
             </div>
-            <h2 class="text-2xl font-bold mb-4 text-white">Optik Okuma Başlat</h2>
-            <p class="text-slate-400 mb-8 max-w-sm">Kamerayı açarak öğrenci formlarını tarayın. SaaS motoru verileri otomatik mühürleyecektir.</p>
-            <button onclick="kamerayiAc()" class="w-full max-w-md bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95">
-                <i class="fas fa-camera mr-2"></i> Tarayıcıyı Başlat
-            </button>
+            
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="space-y-6">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-[0.2em]">Sınav Adı</label>
+                        <input type="text" id="examName" placeholder="Örn: 10-A Matematik 2. Yazılı" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-[0.2em]">Soru Sayısı</label>
+                            <select id="questionCount" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-4 focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                                <option value="20">20 Soru</option>
+                                <option value="40">40 Soru</option>
+                                <option value="100">100 Soru</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-2 block tracking-[0.2em]">Ders</label>
+                            <select class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-4 px-4 focus:ring-2 focus:ring-emerald-500 outline-none transition text-slate-400">
+                                <option>Seçiniz...</option>
+                                <option>Matematik</option>
+                                <option>Türkçe</option>
+                                <option>Fen Bilimleri</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-slate-900/50 rounded-3xl border border-dashed border-slate-700">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-4 block tracking-[0.2em]">Cevap Anahtarı Girişi</label>
+                        <textarea id="answerKey" placeholder="Örn: 1.A, 2.B, 3.C..." class="w-full bg-transparent border-0 outline-none h-24 text-sm text-emerald-500 font-mono resize-none" spellcheck="false"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center justify-center bg-slate-900/30 rounded-[2.5rem] border border-slate-700 p-8">
+                    <div class="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
+                        <i class="fas fa-expand-arrows-alt text-3xl text-emerald-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Optik Okumayı Başlat</h3>
+                    <p class="text-slate-500 text-xs text-center mb-8">Formu çerçeveye hizaladığınızda analiz motoru otomatik olarak sonuçları mühürleyecektir.</p>
+                    
+                    <button onclick="kamerayiAc()" class="w-full bg-emerald-600 hover:bg-emerald-400 text-white font-bold py-5 rounded-[1.5rem] shadow-2xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-3">
+                        <i class="fas fa-camera"></i> TARAYICIYI BAŞLAT
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="cameraArea" class="hidden fixed inset-0 bg-black flex flex-col items-center justify-center">
         <video id="video" class="w-full h-full absolute inset-0" autoplay playsinline></video>
-        
         <div class="relative z-10 flex flex-col items-center w-full h-full">
-            <div class="mt-10 bg-slate-900/80 px-4 py-2 rounded-full border border-emerald-500 text-emerald-500 font-mono text-xs animate-pulse">
-                SAAS OPTIC ENGINE v19
+            <div class="mt-10 bg-slate-900/90 px-6 py-2 rounded-full border border-emerald-500 text-emerald-500 font-mono text-xs tracking-widest uppercase">
+                SaaS Engine v19.4.0 Analiz Modu
             </div>
             
             <div class="flex-grow flex items-center justify-center w-full">
-                <div class="w-72 h-96 border-2 border-emerald-500/30 rounded-2xl relative shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-                    <div class="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-emerald-500"></div>
-                    <div class="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-emerald-500"></div>
-                    <div class="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-emerald-500"></div>
-                    <div class="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-emerald-500"></div>
+                <div class="w-72 h-96 border-2 border-emerald-500/30 rounded-3xl relative shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+                    <div class="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-emerald-500"></div>
+                    <div class="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-emerald-500"></div>
+                    <div class="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-emerald-500"></div>
+                    <div class="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-emerald-500"></div>
                 </div>
             </div>
 
-            <div class="mb-12 flex items-center space-x-12">
-                <button onclick="kamerayiKapat()" class="w-16 h-16 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center">
-                    <i class="fas fa-times text-xl"></i>
+            <div class="mb-14 flex items-center space-x-12">
+                <button onclick="kamerayiKapat()" class="w-16 h-16 bg-slate-900/80 text-white rounded-full flex items-center justify-center border border-slate-700">
+                    <i class="fas fa-times"></i>
                 </button>
-                <button onclick="fotografCek()" class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-8 border-emerald-500/20 active:scale-90 transition-all shadow-2xl">
-                    <div class="w-10 h-10 bg-emerald-600 rounded-full"></div>
+                <button onclick="fotografCek()" class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-8 border-emerald-500/20 shadow-2xl active:scale-90 transition-all">
+                    <div class="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-inner">
+                        <i class="fas fa-bolt text-white text-xs"></i>
+                    </div>
                 </button>
                 <div class="w-16"></div>
             </div>
@@ -94,34 +147,26 @@
         const cameraArea = document.getElementById('cameraArea');
 
         async function kamerayiAc() {
-            const constraints = {
-                video: { facingMode: "environment" },
-                audio: false
-            };
+            const exam = document.getElementById('examName').value;
+            if(!exam) { alert('Lütfen önce sınav adını giriniz!'); return; }
 
+            const constraints = { video: { facingMode: "environment" }, audio: false };
             try {
-                // Kamera akışını al
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-                
-                // Video oynamaya başladığında göster
                 video.onloadedmetadata = () => {
                     video.play();
                     cameraArea.classList.remove('hidden');
                     document.body.style.overflow = 'hidden';
                 };
             } catch (err) {
-                console.error("Kamera Hatası:", err);
-                alert("Kamera Başlatılamadı! Lütfen HTTPS protokolünü ve kamera izinlerini kontrol edin.\n\nHata: " + err.name);
+                alert("Kamera hatası: " + err.name);
             }
         }
 
         function kamerayiKapat() {
             const stream = video.srcObject;
-            if (stream) {
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-            }
+            if (stream) { stream.getTracks().forEach(track => track.stop()); }
             video.srcObject = null;
             cameraArea.classList.add('hidden');
             document.body.style.overflow = 'auto';
@@ -133,11 +178,10 @@
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Analiz Efekti
-            alert('Optik Okundu! Veri işleniyor...');
+            // SAAS MÜHÜRLEME SİMÜLASYONU
+            alert(document.getElementById('examName').value + ' analizi mühürlendi!');
             kamerayiKapat();
             
-            // Sayacı artıralım (Görsel test için)
             let current = parseInt(document.getElementById('counter').innerText);
             document.getElementById('counter').innerText = current + 1;
         }

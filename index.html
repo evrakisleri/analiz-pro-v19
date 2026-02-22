@@ -26,7 +26,7 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                         <i class="fas fa-user"></i>
                     </span>
-                    <input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Örn: 12345">
+                    <input type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Örn: 12345">
                 </div>
             </div>
 
@@ -36,7 +36,7 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                         <i class="fas fa-key"></i>
                     </span>
-                    <input type="password" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••">
+                    <input type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-10 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••">
                 </div>
             </div>
 
@@ -49,6 +49,32 @@
             &copy; 2026 Analiz Pro v19 - Tüm Hakları Saklıdır.
         </p>
     </div>
+
+    <script>
+        const loginForm = document.querySelector('form');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+
+            const inputs = document.querySelectorAll('input');
+            const girilenNo = inputs[0].value.trim();
+            const girilenSifre = inputs[1].value.trim();
+
+            // Müdürün admin.html üzerinden kaydedeceği verileri çekiyoruz
+            const mevcutVeriler = JSON.parse(localStorage.getItem('analizProV19_Ogrenciler')) || [];
+
+            // Eşleşme kontrolü
+            const bulundu = mevcutVeriler.find(ogrenci => ogrenci.no === girilenNo && ogrenci.sifre === girilenSifre);
+
+            if (bulundu) {
+                alert("✅ Giriş Başarılı! Uzay Üssüne Hoş Geldin.");
+                // Giriş başarılı olunca gideceği sayfa
+                window.location.href = "ogrenci_panel.html"; 
+            } else {
+                alert("❌ Hatalı Numara veya Şifre! Lütfen müdürün verdiği tek kullanımlık şifreyi girin.");
+            }
+        });
+    </script>
 
 </body>
 </html>

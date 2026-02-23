@@ -4,55 +4,67 @@
     <meta charset="UTF-8"><title>Öğrenci - Analiz Pro v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { background: #05080f; font-family: 'Inter', sans-serif; }
-        .hidden { display: none; }
-    </style>
+    <style>body { background: #05080f; font-family: 'Inter', sans-serif; } .hidden { display: none; }</style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen">
 
-    <div id="authStep" class="fixed inset-0 bg-slate-950 z-[200] flex items-center justify-center p-6">
-        <div class="bg-slate-900 border border-emerald-500/20 w-full max-w-md rounded-[3rem] p-10 text-center">
-            <div class="text-emerald-500 text-3xl mb-6"><i class="fas fa-key"></i></div>
-            <h2 class="text-white font-black italic uppercase mb-2">Şifreni Belirle</h2>
-            <p class="text-[10px] text-slate-500 uppercase mb-8">Ali Yılmaz • İlk Giriş</p>
-            <input type="password" id="p1" placeholder="Yeni Şifre" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white mb-4 outline-none">
-            <input type="password" id="p2" placeholder="Şifre Tekrar" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white mb-6 outline-none">
-            <button onclick="savePass()" class="w-full bg-emerald-600 text-white font-black py-4 rounded-2xl">MÜHÜRLE VE GİRİŞ YAP</button>
+    <div id="authStep" class="hidden fixed inset-0 bg-slate-950 z-[200] flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-emerald-500/20 w-full max-w-md rounded-[3rem] p-10 text-center shadow-2xl">
+            <div class="text-emerald-500 text-4xl mb-6"><i class="fas fa-user-lock"></i></div>
+            <h2 class="text-white font-black italic uppercase mb-2">Hesabı Mühürle</h2>
+            <p class="text-[10px] text-slate-500 mb-8 font-bold">Lütfen Kalıcı Şifreni Belirle</p>
+            <input type="password" id="p1" placeholder="Yeni Şifre" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-5 text-white mb-4 outline-none">
+            <input type="password" id="p2" placeholder="Şifre Tekrar" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-5 text-white mb-8 outline-none">
+            <button onclick="sealAccount()" class="w-full bg-emerald-600 text-white font-black py-5 rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all">MÜHÜRLE VE GİRİŞ YAP</button>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
-        <nav class="p-6 border-b border-slate-800 flex justify-between bg-slate-900/50">
-            <span class="font-black text-white italic">ANALİZ <span class="text-emerald-500 font-normal text-xs">ÖĞRENCİ</span></span>
-            <button onclick="location.href='index.html'" class="text-slate-500"><i class="fas fa-power-off"></i></button>
+        <nav class="p-6 border-b border-slate-800 flex justify-between bg-slate-900/50 backdrop-blur-md sticky top-0">
+            <span class="font-black text-white italic uppercase">ANALİZ <span class="text-emerald-500">ÖĞRENCİ</span></span>
+            <button onclick="location.href='index.html'" class="text-slate-500 hover:text-red-500 transition-colors"><i class="fas fa-power-off"></i></button>
         </nav>
         <main class="max-w-4xl mx-auto p-10">
-            <div class="bg-slate-900/40 border border-slate-800 p-10 rounded-[3rem]">
-                <h3 class="text-white font-black italic uppercase mb-4">Hoş Geldin, Ali</h3>
-                <div class="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-                    <p class="text-xs text-emerald-500 font-bold">SON SINAV BAŞARISI: %85</p>
+            <div class="bg-slate-900/40 border border-slate-800 p-12 rounded-[4rem]">
+                <h3 class="text-white font-black italic uppercase text-3xl tracking-tighter mb-4">Hoş Geldin, Şampiyon</h3>
+                <p class="text-xs text-slate-500 uppercase tracking-widest font-bold mb-8">Ali Yılmaz • 9-A Sınıfı</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-3xl">
+                        <p class="text-[10px] font-black text-emerald-500 mb-1 uppercase">Başarı Puanı</p>
+                        <h4 class="text-white text-4xl font-black italic">85</h4>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // Sayfa açıldığında zorunlu kontrol
         window.onload = function() {
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('authStep').classList.remove('hidden');
+            // Tarayıcı hafızasına bakıyoruz: Şifre daha önce belirlendi mi?
+            const isSealed = localStorage.getItem('v19_sealed');
+            
+            if (isSealed === 'true') {
+                document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('authStep').classList.add('hidden');
+            } else {
+                document.getElementById('authStep').classList.remove('hidden');
+                document.getElementById('dashboard').classList.add('hidden');
+            }
         };
 
-        function savePass() {
+        function sealAccount() {
             const v1 = document.getElementById('p1').value;
             const v2 = document.getElementById('p2').value;
+
             if(v1 !== "" && v1 === v2) {
-                document.getElementById('authStep').style.display = 'none';
+                // Şifreyi tarayıcıya "mühürle"
+                localStorage.setItem('v19_sealed', 'true');
+                
+                document.getElementById('authStep').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
-                alert("Şifreniz başarıyla mühürlendi!");
+                alert("Hesabınız başarıyla mühürlendi!");
             } else {
-                alert("Şifreler uyuşmuyor!");
+                alert("Şifreler uyuşmuyor veya boş bırakılamaz!");
             }
         }
     </script>

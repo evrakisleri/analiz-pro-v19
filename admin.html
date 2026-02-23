@@ -1,153 +1,44 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yönetim Üssü - Analiz Pro v19</title>
+    <meta charset="UTF-8"><title>Yönetim - Analiz Pro v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #05080f; color: #94a3b8; }
-        .manager-card { background: rgba(15, 23, 42, 0.4); border: 1px solid #1e293b; backdrop-filter: blur(10px); }
-        .drop-zone { border: 2px dashed #1e293b; transition: all 0.3s; cursor: pointer; }
-        .drop-zone:hover { border-color: #2563eb; background: rgba(37, 99, 235, 0.05); }
-        .password-tag { font-family: 'JetBrains Mono', monospace; background: #0f172a; color: #60a5fa; border: 1px solid #2563eb33; }
-        @media print { .no-print { display: none; } body { background: white; color: black; } .manager-card { border: none; backdrop-filter: none; } }
-    </style>
+    <style>body { background: #05080f; color: #94a3b8; font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="min-h-screen pb-10">
-
-    <nav class="bg-slate-900/50 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-xl no-print">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-600/20"><i class="fas fa-shield-halved text-xl"></i></div>
-                <div>
-                    <span class="font-black text-xl italic tracking-tighter uppercase text-white leading-none">ANALİZ <span class="text-blue-500 font-normal">PRO</span></span>
-                    <p class="text-[9px] font-bold text-blue-500/80 tracking-[0.3em] uppercase">Müdür Komuta Merkezi</p>
-                </div>
-            </div>
-            <button onclick="location.href='index.html'" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-500/20 hover:text-red-500 transition-all border border-slate-700">
-                <i class="fas fa-power-off"></i>
-            </button>
-        </div>
+<body>
+    <nav class="p-6 border-b border-slate-800 flex justify-between items-center">
+        <span class="font-black text-white italic">ANALİZ <span class="text-blue-500">PRO MÜDÜR</span></span>
+        <button onclick="location.href='index.html'" class="text-slate-500"><i class="fas fa-power-off"></i></button>
     </nav>
-
-    <main class="max-w-7xl mx-auto p-6 space-y-8">
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
-            <div class="lg:col-span-1 manager-card p-8 rounded-[3rem] space-y-6 border-blue-500/20">
-                <h2 class="text-lg font-black text-white italic uppercase tracking-tighter">Öğrenci Aktarımı</h2>
-                <div class="drop-zone rounded-[2rem] p-8 text-center group" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-file-excel text-3xl text-blue-500 mb-4 group-hover:scale-110 transition-transform"></i>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">Excel/CSV Listesini<br>Sürükle veya Seç</p>
-                    <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx" onchange="processFile(this)">
-                </div>
-                <p class="text-[9px] text-slate-600 italic leading-relaxed uppercase font-bold text-center">
-                    * Yüklenen her öğrenciye sistem otomatik olarak 6 haneli geçici bir şifre mühürler.
-                </p>
+    <main class="max-w-6xl mx-auto p-10">
+        <div class="bg-slate-900/40 border border-slate-800 p-10 rounded-[3rem] text-center">
+            <h2 class="text-xl font-black text-white uppercase italic mb-6">Öğrenci Veri Yükleme</h2>
+            <input type="file" id="fileInp" class="hidden" onchange="uploadSim()">
+            <div onclick="document.getElementById('fileInp').click()" class="border-2 border-dashed border-slate-800 p-10 rounded-3xl cursor-pointer hover:border-blue-500 transition-all">
+                <i class="fas fa-file-csv text-4xl mb-4 text-blue-500"></i>
+                <p>Excel / CSV Dosyasını Buraya Bırakın</p>
             </div>
-
-            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="manager-card p-8 rounded-[3rem] flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Toplam Öğrenci</p>
-                        <h3 id="totalStudents" class="text-4xl font-black text-white italic">0</h3>
-                    </div>
-                    <div class="text-5xl text-slate-800/30"><i class="fas fa-users"></i></div>
-                </div>
-                <div class="manager-card p-8 rounded-[3rem] flex items-center justify-between border-emerald-500/20">
-                    <div>
-                        <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Sistem Durumu</p>
-                        <h3 class="text-2xl font-black text-white italic uppercase">GÜVENLİ</h3>
-                    </div>
-                    <div class="text-5xl text-emerald-500/10 animate-pulse"><i class="fas fa-server"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="manager-card rounded-[3rem] p-8 md:p-12 overflow-hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 no-print">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Öğrenci Şifre ve Erişim Veritabanı</h3>
-                <div class="flex gap-4">
-                    <button onclick="window.print()" class="text-[10px] font-black text-blue-500 hover:text-white transition-all bg-blue-500/5 px-6 py-3 rounded-xl border border-blue-500/20">
-                        <i class="fas fa-print mr-2"></i> LİSTEYİ YAZDIR
-                    </button>
-                </div>
-            </div>
-            
-            <div id="placeholder" class="py-20 text-center">
-                <i class="fas fa-database text-4xl text-slate-800 mb-4"></i>
-                <p class="text-sm font-bold text-slate-600 italic">Henüz öğrenci verisi mühürlenmedi.</p>
-            </div>
-
-            <div id="tableContainer" class="hidden overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="text-[9px] font-black text-slate-600 uppercase tracking-widest border-b border-slate-800">
-                        <tr>
-                            <th class="pb-5 px-2">No</th>
-                            <th class="pb-5 px-2">Ad Soyad</th>
-                            <th class="pb-5 px-2">Şifre Mührü</th>
-                            <th class="pb-5 px-2">Durum</th>
-                            <th class="pb-5 px-2 no-print">İşlem</th>
-                        </tr>
+            <div id="res" class="mt-10 hidden overflow-x-auto text-left">
+                <table class="w-full">
+                    <thead class="text-[10px] uppercase border-b border-slate-800 text-slate-500">
+                        <tr><th class="pb-4">No</th><th class="pb-4">İsim</th><th class="pb-4">Geçici Şifre</th></tr>
                     </thead>
-                    <tbody id="studentBody" class="text-xs divide-y divide-slate-800/50">
-                        </tbody>
+                    <tbody id="listBody" class="text-white"></tbody>
                 </table>
             </div>
         </div>
     </main>
-
     <script>
-        function processFile(input) {
-            if(input.files[0]) {
-                const body = document.getElementById('studentBody');
-                const placeholder = document.getElementById('placeholder');
-                const tableContainer = document.getElementById('tableContainer');
-                const totalCount = document.getElementById('totalStudents');
-
-                placeholder.classList.add('hidden');
-                tableContainer.classList.remove('hidden');
-
-                // Örnek Veri Seti (Excel'den gelmiş gibi)
-                const students = [
-                    {no: "101", name: "Ali Yılmaz"},
-                    {no: "102", name: "Ayşe Kaya"},
-                    {no: "103", name: "Mehmet Demir"},
-                    {no: "104", name: "Zeynep Şahin"},
-                    {no: "105", name: "Caner Öz"}
-                ];
-
-                body.innerHTML = "";
-                students.forEach(s => {
-                    const tempPass = Math.random().toString(36).substring(2, 8).toUpperCase();
-                    body.innerHTML += `
-                        <tr class="hover:bg-blue-600/5 transition-all group">
-                            <td class="py-5 px-2 font-mono text-blue-400 font-bold">${s.no}</td>
-                            <td class="py-5 px-2 text-white font-bold uppercase italic">${s.name}</td>
-                            <td class="py-5 px-2">
-                                <span class="password-tag px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest">${tempPass}</span>
-                            </td>
-                            <td class="py-5 px-2">
-                                <span class="flex items-center gap-2 text-[9px] font-black text-amber-500 uppercase">
-                                    <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span> Geçici
-                                </span>
-                            </td>
-                            <td class="py-5 px-2 no-print">
-                                <button onclick="resetPass('${s.name}')" class="text-slate-600 hover:text-red-500 transition-colors text-xs" title="Şifreyi Sıfırla">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                totalCount.innerText = students.length;
-            }
-        }
-
-        function resetPass(name) {
-            alert(name + " için şifre başarıyla sıfırlandı ve geçici anahtar atandı.");
+        function uploadSim() {
+            const list = [{n:"101", i:"Ali Yılmaz"}, {n:"102", i:"Ayşe Kaya"}];
+            const body = document.getElementById('listBody');
+            body.innerHTML = "";
+            list.forEach(s => {
+                const pass = Math.random().toString(36).substring(2,8).toUpperCase();
+                body.innerHTML += `<tr class="border-b border-slate-800/50"><td class="py-4 font-mono text-blue-500">${s.n}</td><td class="py-4 font-bold">${s.i}</td><td class="py-4"><span class="bg-slate-800 px-3 py-1 rounded text-blue-400 font-mono">${pass}</span></td></tr>`;
+            });
+            document.getElementById('res').classList.remove('hidden');
         }
     </script>
 </body>

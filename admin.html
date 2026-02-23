@@ -1,44 +1,79 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8"><title>Yönetim - Analiz Pro v19</title>
+    <meta charset="UTF-8">
+    <title>Yönetim Merkezi - Analiz Pro v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>body { background: #05080f; color: #94a3b8; font-family: 'Inter', sans-serif; }</style>
+    <style>
+        body { background: #05080f; font-family: 'Inter', sans-serif; color: white; }
+        .manager-card { background: rgba(15, 23, 42, 0.4); border: 1px solid #1e293b; backdrop-filter: blur(10px); }
+        .input-field { background: #0f172a; border: 1px solid #1e293b; color: white; }
+    </style>
 </head>
-<body>
-    <nav class="p-6 border-b border-slate-800 flex justify-between items-center">
-        <span class="font-black text-white italic">ANALİZ <span class="text-blue-500">PRO MÜDÜR</span></span>
-        <button onclick="location.href='index.html'" class="text-slate-500"><i class="fas fa-power-off"></i></button>
-    </nav>
-    <main class="max-w-6xl mx-auto p-10">
-        <div class="bg-slate-900/40 border border-slate-800 p-10 rounded-[3rem] text-center">
-            <h2 class="text-xl font-black text-white uppercase italic mb-6">Öğrenci Veri Yükleme</h2>
-            <input type="file" id="fileInp" class="hidden" onchange="uploadSim()">
-            <div onclick="document.getElementById('fileInp').click()" class="border-2 border-dashed border-slate-800 p-10 rounded-3xl cursor-pointer hover:border-blue-500 transition-all">
-                <i class="fas fa-file-csv text-4xl mb-4 text-blue-500"></i>
-                <p>Excel / CSV Dosyasını Buraya Bırakın</p>
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-2xl font-black italic text-blue-500 uppercase">MÜDÜR KOMUTA MERKEZİ</h1>
+            <button onclick="location.href='index.html'" class="bg-slate-900 px-6 py-2 rounded-xl border border-slate-800 hover:text-red-500">Çıkış</button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="manager-card p-8 rounded-[3rem] border-blue-500/20">
+                <h3 class="text-xs font-black uppercase tracking-widest mb-6">Hızlı Kayıt (Öğrenci/Öğretmen)</h3>
+                <div class="space-y-4">
+                    <input type="text" id="regName" placeholder="Ad Soyad" class="w-full input-field rounded-xl p-3 outline-none">
+                    <select id="regRole" class="w-full input-field rounded-xl p-3 outline-none">
+                        <option value="student">Öğrenci</option>
+                        <option value="teacher">Öğretmen</option>
+                    </select>
+                    <input type="text" id="regExtra" placeholder="Sınıf veya Branş" class="w-full input-field rounded-xl p-3 outline-none">
+                    <button onclick="quickReg()" class="w-full bg-blue-600 py-3 rounded-xl font-black text-[10px] uppercase">Sisteme Kaydet</button>
+                </div>
             </div>
-            <div id="res" class="mt-10 hidden overflow-x-auto text-left">
-                <table class="w-full">
-                    <thead class="text-[10px] uppercase border-b border-slate-800 text-slate-500">
-                        <tr><th class="pb-4">No</th><th class="pb-4">İsim</th><th class="pb-4">Geçici Şifre</th></tr>
+
+            <div class="lg:col-span-2 manager-card p-8 rounded-[3rem]">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xs font-black uppercase tracking-widest">Toplu Veri Aktarımı</h3>
+                    <span class="text-[9px] text-slate-500">Şablon: Ad | Soyad | No | Sınıf | Branş</span>
+                </div>
+                <div class="border-2 border-dashed border-slate-800 rounded-3xl p-10 text-center hover:border-blue-500 transition-all cursor-pointer" onclick="document.getElementById('sheetInput').click()">
+                    <i class="fas fa-file-excel text-4xl text-emerald-500 mb-4"></i>
+                    <p class="text-sm">Google Sheets / CSV Dosyasını Seçin</p>
+                    <input type="file" id="sheetInput" class="hidden" onchange="processSheet()">
+                </div>
+            </div>
+        </div>
+
+        <div class="manager-card rounded-[3rem] p-10 mt-10">
+            <h3 class="text-xs font-black uppercase tracking-widest mb-8">Sistemdeki Aktif Kullanıcılar</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="text-slate-500 text-[10px] uppercase border-b border-slate-800">
+                        <tr><th class="pb-4">Tür</th><th class="pb-4">İsim</th><th class="pb-4">Sınıf/Branş</th><th class="pb-4">Tek Kullanımlık Şifre</th><th class="pb-4">Durum</th></tr>
                     </thead>
-                    <tbody id="listBody" class="text-white"></tbody>
+                    <tbody id="userTable" class="text-sm">
+                        </tbody>
                 </table>
             </div>
         </div>
-    </main>
+    </div>
+
     <script>
-        function uploadSim() {
-            const list = [{n:"101", i:"Ali Yılmaz"}, {n:"102", i:"Ayşe Kaya"}];
-            const body = document.getElementById('listBody');
-            body.innerHTML = "";
-            list.forEach(s => {
-                const pass = Math.random().toString(36).substring(2,8).toUpperCase();
-                body.innerHTML += `<tr class="border-b border-slate-800/50"><td class="py-4 font-mono text-blue-500">${s.n}</td><td class="py-4 font-bold">${s.i}</td><td class="py-4"><span class="bg-slate-800 px-3 py-1 rounded text-blue-400 font-mono">${pass}</span></td></tr>`;
-            });
-            document.getElementById('res').classList.remove('hidden');
+        function quickReg() {
+            const name = document.getElementById('regName').value;
+            const role = document.getElementById('regRole').value;
+            const extra = document.getElementById('regExtra').value;
+            const tempPass = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            const row = `<tr class="border-b border-slate-800/50">
+                <td class="py-4 font-bold text-xs uppercase">${role === 'student' ? '🎓' : '👨‍🏫'}</td>
+                <td class="py-4 font-bold">${name}</td>
+                <td class="py-4 text-slate-400">${extra}</td>
+                <td class="py-4"><span class="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-lg font-mono">${tempPass}</span></td>
+                <td class="py-4 text-amber-500 text-[10px] font-black uppercase italic">Bekliyor</td>
+            </tr>`;
+            document.getElementById('userTable').innerHTML += row;
         }
     </script>
 </body>

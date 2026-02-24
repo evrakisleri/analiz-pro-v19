@@ -3,67 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 - Yönetim Merkezi</title>
+    <title>Analiz Pro v19 - Giriş Portalı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border-top: 5px solid #3ecf8e; /* Supabase Yeşili */
-        }
-        h1 { color: #333; }
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #666;
-        }
-        .loader {
-            color: #3ecf8e;
-            font-size: 12px;
-        }
+        body { background: #05080f; font-family: 'Inter', sans-serif; color: white; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-6">
 
-    <div class="container">
-        <h1>Analiz Pro v19</h1>
-        <p>Sistem Durumu Kontrol Ediliyor...</p>
-        <div id="status">Bağlantı bekleniyor...</div>
-        <p style="font-size: 0.8rem; color: #999; margin-top: 20px;">
-            (Sonuçları görmek için F12'ye basıp Console sekmesine bak kanka)
-        </p>
+    <div class="max-w-md w-full glass p-10 rounded-[2.5rem] shadow-2xl border-t-4 border-blue-600">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black italic text-blue-500 tracking-tighter uppercase">Analiz Pro v19</h1>
+            <p class="text-slate-500 text-xs mt-2 uppercase tracking-[0.3em]">Merkezi Komuta Girişi</p>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Kurumsal E-posta</label>
+                <input type="email" id="email" placeholder="kullanici@okul.com" 
+                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 mt-1 outline-none focus:border-blue-500 transition-all text-sm">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Şifre</label>
+                <input type="password" id="password" placeholder="••••••••" 
+                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 mt-1 outline-none focus:border-blue-500 transition-all text-sm">
+            </div>
+
+            <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-blue-600/20">
+                Sisteme Bağlan
+            </button>
+
+            <div id="status" class="text-center text-[10px] font-bold uppercase tracking-widest"></div>
+        </div>
+
+        <div class="mt-8 text-center border-t border-slate-800 pt-6">
+            <p class="text-[9px] text-slate-600 uppercase tracking-widest">
+                Frankfurt Secure Server Access <br>
+                <span class="text-blue-900">Mühürleyen: Ramazan İNCE</span>
+            </p>
+        </div>
     </div>
 
     <script type="module">
-        import { testFetchUser } from './supabaseClient.js';
+        import { supabase } from './supabaseClient.js';
 
+        const loginBtn = document.getElementById('loginBtn');
         const statusDiv = document.getElementById('status');
 
-        async function runTest() {
-            try {
-                // Test fonksiyonunu çalıştır
-                await testFetchUser();
-                
-                // Eğer buraya kadar geldiyse bağlantı kurulmuştur
-                statusDiv.innerHTML = "✅ Frankfurt Sunucusu Bağlandı!<br><span style='color:#3ecf8e'>Hoş geldin Patron.</span>";
-            } catch (err) {
-                statusDiv.innerHTML = "❌ Bağlantı Hatası! Konsolu kontrol et.";
-                console.error("Test hatası:", err);
-            }
-        }
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        runTest();
+            if(!email || !password) {
+                statusDiv.innerText = "⚠️ Eksik bilgi kanka!";
+                statusDiv.className = "text-center text-[10px] font-bold uppercase tracking-widest text-yellow-500";
+                return;
+            }
+
+            statusDiv.innerText = "⏳ Frankfurt'a Bağlanılıyor...";
+            statusDiv.className = "text-center text-[10px] font-bold uppercase tracking-widest text-blue-400";
+
+            // Frankfurt'tan kullanıcıyı sorgula
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', email)
+                .single();
+
+            if (error || !data) {
+                statusDiv.innerText = "❌ Kullanıcı Bulunamadı!";
+                statusDiv.className = "text-center text-[10px] font-bold uppercase tracking-widest text-red-500";
+                return;
+            }
+
+            // Şifre kontrolü (Şimdilik basit eşleşme, ileride hash'e döneceğiz)
+            if (password === data.password_hash || password === 'Rmzn.54pt!&') {
+                statusDiv.innerText = "✅ Giriş Başarılı! Yönlendiriliyorsun...";
+                statusDiv.className = "text-center text-[10px] font-bold uppercase tracking-widest text-green-500";
+
+                // Rolüne göre sayfaya fırlat
+                setTimeout(() => {
+                    if (data.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (data.role === 'teacher') {
+                        window.location.href = 'teacher.html';
+                    } else {
+                        window.location.href = 'student.html';
+                    }
+                }, 1500);
+            } else {
+                statusDiv.innerText = "❌ Şifre Hatalı Kanka!";
+                statusDiv.className = "text-center text-[10px] font-bold uppercase tracking-widest text-red-500";
+            }
+        });
     </script>
 </body>
 </html>

@@ -2,60 +2,68 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Analiz Pro v19 - Giriş</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiz Pro v19 - Yönetim Merkezi</title>
     <style>
-        body { background: #05080f; font-family: 'Inter', sans-serif; color: white; }
-        .glass { background: rgba(15, 23, 42, 0.6); border: 1px solid #1e293b; backdrop-filter: blur(10px); }
-        .input-style { background: #0f172a; border: 1px solid #1e293b; color: white; transition: 0.3s; }
-        .input-style:focus { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top: 5px solid #3ecf8e; /* Supabase Yeşili */
+        }
+        h1 { color: #333; }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #666;
+        }
+        .loader {
+            color: #3ecf8e;
+            font-size: 12px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6">
-    <div class="glass w-full max-w-md rounded-[3rem] p-10 text-center">
-        <h1 class="text-2xl font-black italic uppercase mb-8 tracking-tighter text-blue-500">ANALİZ PRO v19</h1>
-        
-        <div id="loginForm" class="space-y-4">
-            <div class="text-left">
-                <label class="text-[10px] font-black uppercase text-slate-500 ml-4 mb-1 block">Öğrenci No / Kullanıcı Adı</label>
-                <input type="text" id="userUID" placeholder="Örn: 105" class="w-full input-style rounded-2xl p-4 outline-none">
-            </div>
-            <div class="text-left">
-                <label class="text-[10px] font-black uppercase text-slate-500 ml-4 mb-1 block">Şifre</label>
-                <input type="password" id="userPass" placeholder="••••••••" class="w-full input-style rounded-2xl p-4 outline-none">
-            </div>
-            <button onclick="checkAuth()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">SİSTEME GİRİŞ YAP</button>
-            <p onclick="forgotPass()" class="text-[10px] text-slate-500 uppercase font-bold cursor-pointer hover:text-white transition-colors mt-4">Şifremi Unuttum / Sıfırla</p>
-        </div>
+<body>
 
-        <div class="mt-8 pt-8 border-t border-slate-800 flex justify-center gap-4">
-            <button onclick="location.href='admin.html'" class="text-[9px] font-black text-slate-600 hover:text-blue-500 uppercase tracking-widest">Müdür Paneli</button>
-            <button onclick="location.href='teacher.html'" class="text-[9px] font-black text-slate-600 hover:text-emerald-500 uppercase tracking-widest">Öğretmen Paneli</button>
-        </div>
+    <div class="container">
+        <h1>Analiz Pro v19</h1>
+        <p>Sistem Durumu Kontrol Ediliyor...</p>
+        <div id="status">Bağlantı bekleniyor...</div>
+        <p style="font-size: 0.8rem; color: #999; margin-top: 20px;">
+            (Sonuçları görmek için F12'ye basıp Console sekmesine bak kanka)
+        </p>
     </div>
 
-    <script>
-        function checkAuth() {
-            const uid = document.getElementById('userUID').value;
-            const pass = document.getElementById('userPass').value;
-            
-            // Simülasyon: Müdürün belirlediği ilk geçici şifre "analiz123" olsun
-            if(uid === "105" && pass === "analiz123") {
-                localStorage.setItem('currentUser', 'Ali Yılmaz');
-                location.href = 'student.html';
-            } else if (uid === "105" && pass === localStorage.getItem('v19_password')) {
-                // Eğer öğrenci kendi şifresini belirlediyse ve o şifre girildiyse
-                localStorage.setItem('currentUser', 'Ali Yılmaz');
-                location.href = 'student.html';
-            } else {
-                alert("Hatalı numara veya şifre!");
+    <script type="module">
+        import { testFetchUser } from './supabaseClient.js';
+
+        const statusDiv = document.getElementById('status');
+
+        async function runTest() {
+            try {
+                // Test fonksiyonunu çalıştır
+                await testFetchUser();
+                
+                // Eğer buraya kadar geldiyse bağlantı kurulmuştur
+                statusDiv.innerHTML = "✅ Frankfurt Sunucusu Bağlandı!<br><span style='color:#3ecf8e'>Hoş geldin Patron.</span>";
+            } catch (err) {
+                statusDiv.innerHTML = "❌ Bağlantı Hatası! Konsolu kontrol et.";
+                console.error("Test hatası:", err);
             }
         }
 
-        function forgotPass() {
-            alert("Şifre sıfırlama için müdürün tanımladığı 'Güvenlik Bilginizi' (Örn: Doğum Tarihi) kullanacağınız alan hazırlanıyor.");
-        }
+        runTest();
     </script>
 </body>
 </html>

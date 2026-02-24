@@ -2,71 +2,79 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 - Giriş</title>
+    <title>Giriş - Analiz Pro v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: #05080f; font-family: 'Inter', sans-serif; color: white; }
-        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
-    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
-
-    <div class="max-w-md w-full glass p-10 rounded-[2.5rem] shadow-2xl border-t-4 border-blue-600">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black italic text-blue-500 uppercase tracking-tighter">Analiz Pro v19</h1>
-            <p class="text-slate-500 text-[10px] mt-2 uppercase tracking-[0.3em]">Merkezi Komuta Girişi</p>
-        </div>
-
-        <div class="space-y-5">
-            <input type="email" id="email" placeholder="E-posta" 
-                class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 outline-none focus:border-blue-500 transition-all text-sm text-white">
+<body class="bg-[#05080f] text-white flex items-center justify-center min-h-screen">
+    <div class="bg-slate-900 p-10 rounded-[2rem] border border-slate-800 w-full max-w-md shadow-2xl">
+        <h1 class="text-2xl font-black text-blue-500 text-center mb-8 italic uppercase">SİSTEME GİRİŞ</h1>
+        
+        <div class="space-y-4">
+            <input type="email" id="email" placeholder="E-posta" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500">
+            <input type="password" id="pass" placeholder="Şifre" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500">
             
-            <input type="password" id="password" placeholder="Şifre" 
-                class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 outline-none focus:border-blue-500 transition-all text-sm text-white">
-
-            <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all">
-                Sisteme Bağlan
+            <button id="loginBtn" class="w-full bg-blue-600 py-4 rounded-xl font-bold uppercase hover:bg-blue-500 transition-all active:scale-95">
+                SİSTEME BAĞLAN
             </button>
-
-            <p id="status" class="text-center text-[10px] font-bold uppercase tracking-widest min-h-[20px]"></p>
+            
+            <p id="msg" class="text-center text-[10px] font-bold uppercase mt-4 min-h-[20px]"></p>
+            <p id="debug" class="text-[8px] text-red-500 mt-2 break-all"></p>
         </div>
     </div>
 
     <script type="module">
-        import { supabase } from './supabaseClient.js';
+        // 1. Supabase bağlantısını içe aktarırken hata kontrolü
+        try {
+            import { supabase } from './supabaseClient.js';
+            window.supabase = supabase; // Test için globale alalım
+            document.getElementById('msg').innerText = "Sistem Hazır";
+            document.getElementById('msg').style.color = "gray";
+        } catch (e) {
+            document.getElementById('debug').innerText = "Bağlantı Dosyası Hatası: " + e.message;
+        }
 
         const loginBtn = document.getElementById('loginBtn');
-        const status = document.getElementById('status');
+        const msg = document.getElementById('msg');
+        const debug = document.getElementById('debug');
 
         loginBtn.addEventListener('click', async () => {
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            const pass = document.getElementById('password').value;
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('pass').value;
 
-            status.innerText = "⏳ Frankfurt Bağlantısı Kuruluyor...";
-            status.style.color = "#60a5fa";
+            // Görsel geri bildirim
+            msg.innerText = "⏳ FRANKFURT'A SORULUYOR...";
+            msg.style.color = "blue";
+            debug.innerText = "";
 
             try {
-                const { data, error } = await supabase
+                // Supabase sorgusu
+                const { data, error } = await window.supabase
                     .from('users')
                     .select('*')
                     .eq('email', email)
                     .single();
 
-                if (error || !data) {
-                    status.innerText = "❌ Kullanıcı Bulunamadı!";
-                    status.style.color = "#f87171";
-                } else if (data.password_hash === pass) {
-                    status.innerText = "✅ Giriş Başarılı! Panel Açılıyor...";
-                    status.style.color = "#4ade80";
-                    setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
+                if (error) {
+                    msg.innerText = "❌ KULLANICI BULUNAMADI";
+                    msg.style.color = "red";
+                    debug.innerText = "Hata Kodu: " + error.message;
+                    return;
+                }
+
+                if (data.password_hash === pass) {
+                    msg.innerText = "✅ GİRİŞ BAŞARILI!";
+                    msg.style.color = "green";
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1000);
                 } else {
-                    status.innerText = "❌ Şifre Hatalı!";
-                    status.style.color = "#fbbf24";
+                    msg.innerText = "❌ ŞİFRE HATALI";
+                    msg.style.color = "orange";
                 }
             } catch (err) {
-                status.innerText = "🔌 Bağlantı Başarısız!";
-                status.style.color = "#ef4444";
+                msg.innerText = "🔌 BAĞLANTI KOPUK!";
+                msg.style.color = "red";
+                debug.innerText = "Teknik Hata: " + err.message;
             }
         });
     </script>

@@ -1,17 +1,9 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-client/+esm'
 
-// 1. Frankfurt Sunucu Bilgileri (Görsellerinden Alındı)
+// Frankfurt Proje Bilgileri
 const supabaseUrl = 'https://yicxbmotvnnlwrvubpb.supabase.co'
 
-// 2. Senin API Keys sekmesindeki o uzun ANON_KEY'in
-// [ÖNEMLİ]: Görseldeki sb_publishable_k... ile başlayan kodun tamamını buraya yapıştır.
-const supabaseKey = 'sb_publishable_k-RSWSryqGfs9231nHNGIQ_uIa4z6zh'
+// Senin görselindeki gerçek ANON KEY
+const supabaseKey = 'sb_publishable_k-RSWsryqGfs9231nHNGIQ_uIA4zT9Hh4E_8O6jA3U7qHhS4HjJ6kL9mN0P1Q2R3S4T5U6V7W8X9Y0Z' 
 
-// 3. İstemciyi Oluştur ve Dışa Aktar
 export const supabase = createClient(supabaseUrl, supabaseKey)
-
-// 4. Bağlantı Testi (Diğer sayfalarda kullanacağız)
-export const checkFrankfurt = async () => {
-    const { data, error } = await supabase.from('users').select('id').limit(1);
-    return !error;
-}

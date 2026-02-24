@@ -2,103 +2,68 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 - Giriş Portalı</title>
+    <title>Analiz Pro v19 - Giriş</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background: #05080f; font-family: 'Inter', sans-serif; color: white; }
-        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
-    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
-
-    <div class="max-w-md w-full glass p-10 rounded-[2.5rem] shadow-2xl border-t-4 border-blue-600">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black italic text-blue-500 uppercase tracking-tighter">Analiz Pro v19</h1>
-            <p class="text-slate-500 text-[10px] mt-2 uppercase tracking-[0.3em]">Merkezi Komuta Girişi</p>
-        </div>
-
-        <div class="space-y-5">
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 tracking-widest text-white">E-posta</label>
-                <input type="email" id="email" placeholder="ramazanince54@gmail.com" 
-                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 mt-1 outline-none focus:border-blue-500 transition-all text-sm text-white">
-            </div>
-
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 tracking-widest text-white">Şifre</label>
-                <input type="password" id="password" placeholder="••••••••" 
-                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 mt-1 outline-none focus:border-blue-500 transition-all text-sm text-white">
-            </div>
-
-            <button onclick="sistemeBaglan()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg active:scale-95">
-                Sisteme Bağlan
+<body class="bg-[#05080f] text-white flex items-center justify-center min-h-screen">
+    <div class="bg-slate-900 p-10 rounded-[2.5rem] border border-slate-800 w-full max-w-md shadow-2xl">
+        <h1 class="text-2xl font-black text-blue-500 text-center mb-8 italic uppercase tracking-tighter">Analiz Pro v19</h1>
+        
+        <div class="space-y-4">
+            <input type="email" id="email" placeholder="E-posta" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500 transition-all">
+            <input type="password" id="pass" placeholder="Şifre" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500 transition-all">
+            
+            <button id="loginBtn" class="w-full bg-blue-600 py-4 rounded-xl font-bold uppercase hover:bg-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+                SİSTEME BAĞLAN
             </button>
-
-            <p id="status" class="text-center text-[10px] font-bold uppercase tracking-widest min-h-[20px] text-slate-500">Hazır</p>
-        </div>
-
-        <div class="mt-8 text-center border-t border-slate-800 pt-6">
-            <p class="text-[9px] text-slate-600 uppercase tracking-widest">
-                Frankfurt Secure Server Access <br>
-                <span class="text-blue-900 font-bold">Müdür: Ramazan İNCE</span>
-            </p>
+            
+            <p id="msg" class="text-center text-[10px] font-bold uppercase mt-4 min-h-[20px] text-slate-500">Durum: Hazır</p>
         </div>
     </div>
 
-    <script>
-        // Supabase Bağlantı Bilgileri
-        const SUPABASE_URL = 'https://yicxbmotvnnlwrvubpb.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_k-RSWSryqGfs9231nHNGIQ_uIa4z6zh'; // Görselindeki anon key'i buraya tırnak içine yapıştır kanka
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const loginBtn = document.getElementById('loginBtn');
+        const msg = document.getElementById('msg');
 
-        async function sistemeBaglan() {
-            const emailInput = document.getElementById('email').value.trim().toLowerCase();
-            const passwordInput = document.getElementById('password').value;
-            const status = document.getElementById('status');
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const pass = document.getElementById('pass').value;
 
-            if(!emailInput || !passwordInput) {
-                status.innerText = "⚠️ Bilgileri Gir Kanka!";
-                status.style.color = "#fbbf24";
-                return;
-            }
-
-            status.innerText = "⏳ Frankfurt Sorgulanıyor...";
-            status.style.color = "#60a5fa";
+            msg.innerText = "⏳ FRANKFURT'A SORULUYOR...";
+            msg.style.color = "#60a5fa";
 
             try {
-                // Frankfurt Users Tablosu Sorgusu
-                const { data, error } = await _supabase
+                // Frankfurt Sorgusu
+                const { data, error } = await supabase
                     .from('users')
                     .select('*')
-                    .eq('email', emailInput)
+                    .eq('email', email)
                     .single();
 
                 if (error || !data) {
-                    status.innerText = "❌ Kullanıcı Bulunamadı!";
-                    status.style.color = "#f87171";
+                    msg.innerText = "❌ KULLANICI BULUNAMADI!";
+                    msg.style.color = "#f87171";
                     return;
                 }
 
                 // Şifre Doğrulama
-                if (data.password_hash === passwordInput) {
-                    status.innerText = "✅ Hoş Geldin Patron!";
-                    status.style.color = "#4ade80";
+                if (data.password_hash === pass) {
+                    msg.innerText = "✅ BAŞARILI! YÖNLENDİRİLİYORSUN...";
+                    msg.style.color = "#4ade80";
                     setTimeout(() => {
                         window.location.href = 'admin.html';
                     }, 1000);
                 } else {
-                    status.innerText = "❌ Şifre Hatalı!";
-                    status.style.color = "#fbbf24";
+                    msg.innerText = "❌ ŞİFRE HATALI!";
+                    msg.style.color = "#fbbf24";
                 }
             } catch (err) {
-                status.innerText = "🔌 Bağlantı Hatası!";
-                status.style.color = "#ef4444";
-                alert("Teknik Hata: " + err.message);
+                msg.innerText = "🔌 BAĞLANTI HATASI!";
+                msg.style.color = "#ef4444";
             }
-        }
+        });
     </script>
 </body>
 </html>

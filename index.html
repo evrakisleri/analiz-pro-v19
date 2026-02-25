@@ -7,42 +7,57 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#05080f] text-white flex items-center justify-center min-h-screen">
-    <div class="bg-slate-900 p-10 rounded-[2.5rem] border border-slate-800 w-full max-w-md shadow-2xl">
-        <h1 class="text-3xl font-black text-blue-500 text-center mb-8 italic uppercase tracking-tighter">Analiz Pro v19</h1>
+    <div class="bg-[#0a0f1a] p-10 rounded-[2.5rem] border border-slate-800 w-full max-w-md shadow-2xl text-center">
+        <h1 class="text-2xl font-black text-blue-500 mb-8 italic uppercase tracking-widest">ANALİZ PRO V19</h1>
         <div class="space-y-4">
-            <input type="email" id="email" placeholder="ramazanince54@gmail.com" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500">
-            <input type="password" id="pass" placeholder="Şifre" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500">
-            <button onclick="login()" id="btn" class="w-full bg-blue-600 py-4 rounded-xl font-bold uppercase hover:bg-blue-500 transition-all active:scale-95">SİSTEME BAĞLAN</button>
-            <p id="msg" class="text-center text-[10px] font-bold uppercase mt-4 text-slate-500">Giriş Yetkisi: Frankfurt Auth</p>
+            <input type="email" id="email" value="ramazanince54@gmail.com" class="w-full bg-[#e8f0fe] p-4 rounded-xl text-black outline-none border-none">
+            <input type="password" id="pass" placeholder="••••••••" class="w-full bg-black border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-blue-500 transition-all">
+            <button onclick="login()" id="btn" class="w-full bg-[#2563eb] py-4 rounded-xl font-bold uppercase hover:bg-blue-600 transition-all active:scale-95">SİSTEME BAĞLAN</button>
+            <p id="msg" class="text-[10px] font-bold uppercase mt-4 text-slate-500">Durum: Frankfurt Bekleniyor</p>
         </div>
     </div>
 
     <script>
-        // Frankfurt Bağlantı Bilgilerin
+        // Senin projenin kimlik bilgileri
         const supabaseUrl = 'https://yicxbmotvnnlwrvubpb.supabase.co';
-        const supabaseKey = 'sb_publishable_k-RSWsryqGfs9231nHNGIQ_uIA4zT9Hh4E_8O6jA3U7qHhS4HjJ6kL9mN0P1Q2R3S4T5U6V7W8X9Y0Z'; 
+        const supabaseKey = 'sb_publishable_k-RSWsryqGfs9231nHNGIQ_uIA4zT9Hh4E_8O6jA3U7qHhS4HjJ6kL9mN0P1Q2R3S4T5U6V7W8X9Y0Z';
+        
+        // Supabase bağlantısını kur
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('pass').value;
             const msg = document.getElementById('msg');
+            const btn = document.getElementById('btn');
 
-            msg.innerText = "⏳ FRANKFURT DOĞRULUYOR...";
+            msg.innerText = "⏳ BAĞLANTI KURULUYOR...";
+            msg.style.color = "#3b82f6";
+            btn.disabled = true;
 
-            // Senin yazdığın o meşhur giriş kodu!
-            const { data, error } = await _supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+            try {
+                // 1. ADIM: Frankfurt Auth Girişi
+                const { data, error } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
 
-            if (error) {
-                msg.innerText = "❌ HATA: " + error.message;
-                msg.style.color = "#f87171";
-            } else {
-                msg.innerText = "✅ BAŞARILI! MÜDÜR PANELİNE GİDİLİYOR...";
+                if (error) throw error;
+
+                // 2. ADIM: Başarılıysa yönlendir
+                msg.innerText = "✅ BAŞARILI! PANEL AÇILIYOR...";
                 msg.style.color = "#4ade80";
-                setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
+                
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1000);
+
+            } catch (err) {
+                // 3. ADIM: Hata varsa kullanıcıya göster
+                msg.innerText = "❌ HATA: " + err.message;
+                msg.style.color = "#f87171";
+                btn.disabled = false;
+                console.error("Giriş Hatası:", err);
             }
         }
     </script>

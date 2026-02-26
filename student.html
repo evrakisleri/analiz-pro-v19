@@ -1,11 +1,56 @@
-<script type="module">
-    import { supabase } from './supabaseClient.js';
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiz Pro v19 - Öğrenci Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white font-sans">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md bg-gray-900 border-2 border-green-500 rounded-2xl p-8 shadow-2xl">
+            <h1 class="text-2xl font-bold text-green-400 mb-6 text-center">ÖĞRENCİ ANALİZ SİSTEMİ</h1>
+            
+            <div id="profile-card" class="space-y-4">
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <p class="text-xs text-gray-500 uppercase">Öğrenci Adı</p>
+                    <p id="std-name" class="text-lg font-semibold text-white">Yükleniyor...</p>
+                </div>
+                
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <p class="text-xs text-gray-500 uppercase">Sınıf / Şube</p>
+                    <p id="std-class" class="text-lg font-semibold text-white">-</p>
+                </div>
 
-    async function getStudentData() {
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data: profile } = await supabase.from('users').select('*').eq('email', user.email).single();
-        
-        document.getElementById('student-info').innerText = `Öğrenci: ${profile.full_name} | Sınıf: ${profile.class_branch}`;
-    }
-    getStudentData();
-</script>
+                <div class="mt-6">
+                    <button onclick="location.reload()" class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-xl font-bold transition">
+                        SONUÇLARIMI GÜNCELLE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+
+        async function loadStudentProfile() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { window.location.href = 'index.html'; return; }
+
+            const { data: profile, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', user.email)
+                .single();
+
+            if (profile) {
+                document.getElementById('std-name').innerText = profile.full_name.toUpperCase();
+                document.getElementById('std-class').innerText = profile.class_branch;
+            }
+        }
+
+        loadStudentProfile();
+    </script>
+</body>
+</html>

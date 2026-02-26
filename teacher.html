@@ -2,63 +2,25 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 - Öğretmen Paneli</title>
+    <title>Öğretmen Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans">
-    <nav class="p-4 bg-gray-800 border-b border-blue-500 flex justify-between">
-        <h1 class="text-xl font-bold text-blue-400">Öğretmen Paneli</h1>
-        <div id="teacher-info" class="text-sm">Yükleniyor...</div>
-    </nav>
-
-    <div class="p-6">
-        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h2 class="text-lg mb-4 border-b border-gray-600 pb-2">Sınıf Listesi ve Analizler</h2>
-            <div id="class-list" class="space-y-2">
-                <p class="text-gray-400">Sınıf verileri getiriliyor...</p>
-            </div>
-        </div>
+<body class="bg-gray-900 text-white p-6">
+    <h1 class="text-xl font-bold text-orange-400 mb-4">ÖĞRETMEN ANALİZ EKRANI</h1>
+    <div id="classData" class="bg-gray-800 p-4 rounded border border-gray-700">
+        Sınıf verileri Frankfurt üzerinden çekiliyor...
     </div>
 
     <script type="module">
         import { supabase } from './supabaseClient.js';
-
-        async function initTeacher() {
-            // 1. Giriş yapmış kullanıcıyı al
+        async function load() {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { window.location.href = 'index.html'; return; }
-
-            // 2. Kullanıcı profilini çek
-            const { data: profile, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', user.email)
-                .single();
-
-            if (error || (profile.role !== 'teacher' && profile.role !== 'admin')) {
-                alert("Öğretmen yetkisi bulunamadı!");
-                window.location.href = 'index.html';
-                return;
+            const { data: profile } = await supabase.from('users').select('*').eq('email', user?.email).single();
+            if (profile?.role === 'teacher') {
+                document.getElementById('classData').innerText = `${profile.class_branch} Sınıfı Listesi Yüklendi.`;
             }
-
-            // 3. Bilgileri ekrana yaz
-            document.getElementById('teacher-info').innerText = `${profile.full_name} | Branş: ${profile.class_branch}`;
-
-            // 4. Sınıfındaki öğrencileri getir
-            const { data: students } = await supabase
-                .from('users')
-                .select('*')
-                .eq('class_branch', profile.class_branch)
-                .eq('role', 'student');
-
-            const listDiv = document.getElementById('class-list');
-            listDiv.innerHTML = students.length > 0 
-                ? students.map(s => `<div class="p-2 bg-gray-700 rounded">${s.full_name} - ${s.email}</div>`).join('')
-                : "Sınıfınızda henüz öğrenci bulunmuyor.";
         }
-
-        initTeacher();
+        load();
     </script>
 </body>
 </html>

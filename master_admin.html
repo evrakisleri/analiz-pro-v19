@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Admin Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen p-8">
+    
+    <nav class="flex justify-between items-center mb-8 pb-4 border-b border-purple-800">
+        <h1 class="text-2xl font-black text-purple-400">MASTER PANEL</h1>
+        <button id="logoutBtn" class="bg-red-900 hover:bg-red-700 px-4 py-2 rounded">Çıkış Yap</button>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section class="bg-gray-900 p-6 rounded-2xl border border-purple-900">
+            <h2 class="text-xl font-bold mb-6 text-purple-300">Yeni Okul ve Müdür Ekle</h2>
+            <div class="space-y-4">
+                <input id="sName" type="text" placeholder="Okul Adı" class="w-full p-3 bg-gray-800 rounded border border-gray-700">
+                <input id="mEmail" type="email" placeholder="Müdür E-posta" class="w-full p-3 bg-gray-800 rounded border border-gray-700">
+                <input id="mPass" type="password" placeholder="Müdür Şifre" class="w-full p-3 bg-gray-800 rounded border border-gray-700">
+                <button id="createBtn" class="w-full bg-purple-600 p-3 rounded font-bold hover:bg-purple-700 transition">SİSTEMİ KUR</button>
+            </div>
+        </section>
+
+        <section class="bg-gray-900 p-6 rounded-2xl border border-purple-900">
+            <h2 class="text-xl font-bold mb-4 text-purple-300">Kayıtlı Okullar</h2>
+            <div id="schoolList" class="space-y-3">
+                <p class="text-gray-500">Yükleniyor...</p>
+            </div>
+        </section>
+    </div>
+
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+
+        // Okulları Listele
+        async function loadSchools() {
+            const { data } = await supabase.from('schools').select('*');
+            const list = document.getElementById('schoolList');
+            list.innerHTML = data?.map(s => `
+                <div class="flex justify-between p-3 bg-gray-800 rounded">
+                    <span>${s.school_name}</span>
+                    <span class="text-green-400 font-bold">AKTİF</span>
+                </div>
+            `).join('') || 'Okul bulunamadı.';
+        }
+
+        // Okul + Müdür Oluştur (Edge Function Çağrısı)
+        document.getElementById('createBtn').onclick = async () => {
+            const body = {
+                schoolName: document.getElementById('sName').value,
+                email: document.getElementById('mEmail').value,
+                password: document.getElementById('mPass').value
+            };
+
+            const { error } = await supabase.functions.invoke('create-school-principal', { body });
+            
+            if (error) alert("Hata: " + error.message);
+            else { alert("Okul ve Müdür başarıyla oluşturuldu!"); loadSchools(); }
+        };
+
+        document.getElementById('logoutBtn').onclick = () => supabase.auth.signOut().then(() => window.location.href = 'index.html');
+        
+        loadSchools();
+    </script>
+</body>
+</html>

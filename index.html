@@ -1,29 +1,36 @@
-<script type="module">
-    import { supabase } from './supabaseClient.js';
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Analiz Pro v19 - Giriş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white flex items-center justify-center min-h-screen">
+    <div class="bg-gray-900 p-8 rounded-2xl border-2 border-blue-600 w-80 shadow-2xl">
+        <h2 class="text-center font-bold mb-6 text-blue-400 italic">ANALİZ PRO V19</h2>
+        <input id="email" type="email" placeholder="E-posta" class="w-full p-2 mb-4 bg-gray-800 rounded border border-gray-700">
+        <input id="pass" type="password" placeholder="Şifre" class="w-full p-2 mb-4 bg-gray-800 rounded border border-gray-700">
+        <button id="loginBtn" class="w-full bg-blue-600 p-2 rounded font-bold hover:bg-blue-700">SİSTEME BAĞLAN</button>
+        <p id="msg" class="text-[10px] mt-4 text-center text-gray-500 uppercase">DURUM: FRANKFURT BEKLENİYOR</p>
+    </div>
 
-    window.login = async () => {
-        const email = document.getElementById('email').value.trim();
-        const pass = document.getElementById('pass').value;
-        const msg = document.getElementById('msg');
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+        document.getElementById('loginBtn').onclick = async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            const msg = document.getElementById('msg');
+            
+            msg.innerText = "⏳ BAĞLANILIYOR...";
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) { msg.innerText = "❌ HATA: " + error.message; return; }
 
-        msg.innerText = "⏳ BAĞLANILIYOR...";
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-
-        if (error) {
-            msg.innerText = "❌ HATA: " + error.message.toUpperCase();
-            return;
-        }
-
-        // Rolü kontrol et
-        const { data: profile } = await supabase.from('users').select('role').eq('email', email).single();
-
-        if (profile?.role === 'admin') {
-            window.location.href = 'admin.html';
-        } else if (profile?.role === 'teacher') {
-            window.location.href = 'teacher.html';
-        } else {
-            window.location.href = 'student.html';
-        }
-    };
-</script>
+            const { data: user } = await supabase.from('users').select('role').eq('email', email).single();
+            if (user?.role === 'admin') window.location.href = 'admin.html';
+            else if (user?.role === 'teacher') window.location.href = 'teacher.html';
+            else window.location.href = 'student.html';
+        };
+    </script>
+</body>
+</html>

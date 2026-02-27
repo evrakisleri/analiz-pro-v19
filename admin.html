@@ -23,7 +23,7 @@
         </div>
 
         <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-            <h2 class="text-xl font-bold mb-4">Okul Listesi ve Yönetim</h2>
+            <h2 class="text-xl font-bold mb-4">Okul Listesi ve Abonelik Takibi</h2>
             <div id="okulListesi" class="space-y-3">
                 <p class="text-gray-500 animate-pulse">Veriler yükleniyor...</p>
             </div>
@@ -39,19 +39,28 @@
             
             if (error) return list.innerHTML = `<p class="text-red-500">Hata: ${error.message}</p>`;
             
+            const today = new Date();
+            
             if (data && data.length > 0) {
-                list.innerHTML = data.map(o => `
-                    <div class="flex justify-between items-center p-4 bg-gray-700 rounded-lg border-l-4 ${o.status === 'Active' ? 'border-green-500' : 'border-red-500'}">
+                list.innerHTML = data.map(o => {
+                    const expiryDate = new Date(o.trial_end_date);
+                    const isExpired = expiryDate < today;
+                    const statusColor = o.status === 'Active' ? 'border-green-500' : 'border-red-500';
+                    
+                    return `
+                    <div class="flex justify-between items-center p-4 bg-gray-700 rounded-lg border-l-4 ${statusColor}">
                         <div>
                             <span class="font-bold text-lg">${o.school_name}</span>
-                            <p class="text-xs text-gray-400">Durum: ${o.status} | ID: ${o.id}</p>
+                            <p class="text-xs ${isExpired ? 'text-red-400 font-bold' : 'text-gray-400'}">
+                                Durum: ${o.status} | Bitiş: ${o.trial_end_date || 'Tanımlı Değil'}
+                            </p>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="degistirDurum('${o.id}', '${o.status}')" class="bg-blue-600 px-3 py-1 rounded text-xs hover:bg-blue-700">AKTİF/PASİF</button>
                             <button onclick="silOkul('${o.id}')" class="bg-red-600 px-3 py-1 rounded text-xs hover:bg-red-700">SİL</button>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             } else {
                 list.innerHTML = '<p class="text-gray-400">Henüz hiç okul tanımlanmamış.</p>';
             }

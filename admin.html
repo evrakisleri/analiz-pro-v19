@@ -2,67 +2,90 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Master Admin Paneli</title>
+    <title>Analiz Pro v19 - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-950 text-white min-h-screen p-8">
-    
-    <nav class="flex justify-between items-center mb-8 pb-4 border-b border-purple-800">
-        <h1 class="text-2xl font-black text-purple-400">MASTER PANEL</h1>
-        <button id="logoutBtn" class="bg-red-900 hover:bg-red-700 px-4 py-2 rounded">Çıkış Yap</button>
-    </nav>
+<body class="bg-gray-900 text-white p-8">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <section class="bg-gray-900 p-6 rounded-2xl border border-purple-900">
-            <h2 class="text-xl font-bold mb-6 text-purple-300">Yeni Okul ve Müdür Ekle</h2>
-            <div class="space-y-4">
-                <input id="sName" type="text" placeholder="Okul Adı" class="w-full p-3 bg-gray-800 rounded border border-gray-700">
-                <input id="mEmail" type="email" placeholder="Müdür E-posta" class="w-full p-3 bg-gray-800 rounded border border-gray-700">
-                <input id="mPass" type="password" placeholder="Müdür Şifre" class="w-full p-3 bg-gray-800 rounded border border-gray-700">
-                <button id="createBtn" class="w-full bg-purple-600 p-3 rounded font-bold hover:bg-purple-700 transition">SİSTEMİ KUR</button>
-            </div>
-        </section>
+    <h1 class="text-3xl font-bold mb-8 text-green-500">Analiz Pro v19 - Master Admin</h1>
 
-        <section class="bg-gray-900 p-6 rounded-2xl border border-purple-900">
-            <h2 class="text-xl font-bold mb-4 text-purple-300">Kayıtlı Okullar</h2>
-            <div id="schoolList" class="space-y-3">
-                <p class="text-gray-500">Yükleniyor...</p>
+    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-8">
+        <h2 class="text-xl font-bold mb-4">Sistem Kurulumu (Okul & Müdür)</h2>
+        <div class="grid grid-cols-1 gap-4 max-w-md">
+            <input type="text" id="okulAdi" placeholder="Okul Adı" class="p-2 bg-gray-700 rounded border border-gray-600">
+            <input type="email" id="mudurEmail" placeholder="Müdür E-posta" class="p-2 bg-gray-700 rounded border border-gray-600">
+            <input type="password" id="mudurSifre" placeholder="Müdür Şifre" class="p-2 bg-gray-700 rounded border border-gray-600">
+            <button id="btnSistemiKur" class="bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded transition">
+                SİSTEMİ KUR
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <h2 class="text-xl font-bold mb-4">Kayıtlı Okullar</h2>
+        <div id="okulListesi" class="divide-y divide-gray-700">
             </div>
-        </section>
     </div>
 
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        // Okulları Listele
-        async function loadSchools() {
-            const { data } = await supabase.from('schools').select('*');
-            const list = document.getElementById('schoolList');
-            list.innerHTML = data?.map(s => `
-                <div class="flex justify-between p-3 bg-gray-800 rounded">
-                    <span>${s.school_name}</span>
-                    <span class="text-green-400 font-bold">AKTİF</span>
-                </div>
-            `).join('') || 'Okul bulunamadı.';
+        // 1. Okul ve Müdür Kurulumu
+        async function kurSistemi() {
+            const okulAdi = document.getElementById('okulAdi').value;
+            const mudurEmail = document.getElementById('mudurEmail').value;
+            const mudurSifre = document.getElementById('mudurSifre').value;
+
+            if (!okulAdi || !mudurEmail || !mudurSifre) return alert("Alanları doldur!");
+
+            try {
+                // Auth: Müdür hesabı oluştur
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: mudurEmail,
+                    password: mudurSifre,
+                });
+                if (authError) throw authError;
+
+                // Schools: Okulu ekle
+                const { data: schoolData, error: insertError } = await supabase
+                    .from('schools')
+                    .insert([{ school_name: okulAdi, status: 'Active' }])
+                    .select()
+                    .single();
+                if (insertError) throw insertError;
+
+                // Users: Müdürü okula bağla
+                const { error: userError } = await supabase
+                    .from('users')
+                    .insert([{
+                        id: authData.user.id,
+                        email: mudurEmail,
+                        role: 'principal',
+                        school_id: schoolData.id
+                    }]);
+                if (userError) throw userError;
+
+                alert("✅ Sistem Başarıyla Kuruldu!");
+                location.reload();
+            } catch (err) {
+                alert("❌ Hata: " + err.message);
+            }
         }
 
-        // Okul + Müdür Oluştur (Edge Function Çağrısı)
-        document.getElementById('createBtn').onclick = async () => {
-            const body = {
-                schoolName: document.getElementById('sName').value,
-                email: document.getElementById('mEmail').value,
-                password: document.getElementById('mPass').value
-            };
-
-            const { error } = await supabase.functions.invoke('create-school-principal', { body });
+        // 2. Okulları Listele
+        async function fetchSchools() {
+            const { data, error } = await supabase.from('schools').select('*');
+            const list = document.getElementById('okulListesi');
             
-            if (error) alert("Hata: " + error.message);
-            else { alert("Okul ve Müdür başarıyla oluşturuldu!"); loadSchools(); }
-        };
+            if (data && data.length > 0) {
+                list.innerHTML = data.map(o => `<p class="py-2">${o.school_name} <span class="text-xs text-gray-500">(${o.status})</span></p>`).join('');
+            } else {
+                list.innerHTML = '<p class="text-gray-400">Henüz okul yok.</p>';
+            }
+        }
 
-        document.getElementById('logoutBtn').onclick = () => supabase.auth.signOut().then(() => window.location.href = 'index.html');
-        
-        loadSchools();
+        document.getElementById('btnSistemiKur').onclick = kurSistemi;
+        fetchSchools();
     </script>
 </body>
 </html>

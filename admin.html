@@ -2,13 +2,13 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Analiz Pro v19 - Yönetim Merkezi</title>
+    <title>Analiz Pro v19 - Master Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-8">
 
     <div class="max-w-6xl mx-auto">
-        <h1 class="text-4xl font-bold mb-8 text-green-500">Analiz Pro v19 - Master Admin Paneli</h1>
+        <h1 class="text-4xl font-bold mb-8 text-green-500">Analiz Pro v19 - Master Admin</h1>
 
         <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg mb-8">
             <h2 class="text-xl font-bold mb-4">Yeni Okul ve Müdür Tanımla</h2>
@@ -33,7 +33,6 @@
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        // 1. Okulları ve Durumlarını Listele
         async function fetchSchools() {
             const list = document.getElementById('okulListesi');
             const { data, error } = await supabase.from('schools').select('*');
@@ -58,21 +57,18 @@
             }
         }
 
-        // 2. Okul Durumu Değiştir
         window.degistirDurum = async (id, currentStatus) => {
             const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
             const { error } = await supabase.from('schools').update({ status: newStatus }).eq('id', id);
             if (!error) fetchSchools(); else alert("Hata: " + error.message);
         };
 
-        // 3. Okul Sil (Cascade delete ile bağlı veriler de silinir)
         window.silOkul = async (id) => {
             if (!confirm("Bu okulu silmek istediğine emin misin? (Bağlı kullanıcılar da silinecektir!)")) return;
             const { error } = await supabase.from('schools').delete().eq('id', id);
             if (!error) fetchSchools(); else alert("Hata: " + error.message);
         };
 
-        // 4. Sistemi Kur (RPC)
         document.getElementById('btnSistemiKur').onclick = async () => {
             const okulAdi = document.getElementById('okulAdi').value;
             const mudurEmail = document.getElementById('mudurEmail').value;

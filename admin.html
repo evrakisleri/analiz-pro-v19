@@ -7,95 +7,57 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-8">
 
-    <div class="max-w-6xl mx-auto">
-        <h1 class="text-4xl font-bold mb-8 text-green-500">Analiz Pro v19 - Master Admin</h1>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-green-500">Sistem Kurulum Merkezi</h1>
 
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg mb-8">
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl">
             <h2 class="text-xl font-bold mb-4">Yeni Okul ve Müdür Tanımla</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="text" id="okulAdi" placeholder="Okul Adı" class="p-3 bg-gray-700 rounded border border-gray-600 focus:border-green-500 outline-none">
-                <input type="email" id="mudurEmail" placeholder="Müdür E-posta" class="p-3 bg-gray-700 rounded border border-gray-600 focus:border-green-500 outline-none">
-                <input type="password" id="mudurSifre" placeholder="Müdür Şifre" class="p-3 bg-gray-700 rounded border border-gray-600 focus:border-green-500 outline-none">
+            <div class="grid grid-cols-1 gap-4 mb-4">
+                <input type="text" id="okulAdi" placeholder="Okul Adı" class="p-3 bg-gray-700 rounded border border-gray-600 outline-none">
+                <input type="email" id="mudurEmail" placeholder="Müdür E-posta" class="p-3 bg-gray-700 rounded border border-gray-600 outline-none">
+                <input type="password" id="mudurSifre" placeholder="Müdür Şifre (Min 6 Karakter)" class="p-3 bg-gray-700 rounded border border-gray-600 outline-none">
             </div>
-            <button id="btnSistemiKur" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
-                SİSTEMİ KUR VE MÜDÜRÜ ATA
+            <button id="btnKur" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold transition">
+                SİSTEMİ KUR
             </button>
-        </div>
-
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-            <h2 class="text-xl font-bold mb-4">Okul Listesi ve Abonelik Takibi</h2>
-            <div id="okulListesi" class="space-y-3">
-                <p class="text-gray-500 animate-pulse">Veriler yükleniyor...</p>
-            </div>
         </div>
     </div>
 
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        async function fetchSchools() {
-            const list = document.getElementById('okulListesi');
-            const { data, error } = await supabase.from('schools').select('*');
-            
-            if (error) return list.innerHTML = `<p class="text-red-500">Hata: ${error.message}</p>`;
-            
-            const today = new Date();
-            
-            if (data && data.length > 0) {
-                list.innerHTML = data.map(o => {
-                    const expiryDate = new Date(o.trial_end_date);
-                    const isExpired = o.trial_end_date && expiryDate < today;
-                    const statusColor = o.status === 'Active' ? 'border-green-500' : 'border-red-500';
-                    
-                    return `
-                    <div class="flex justify-between items-center p-4 bg-gray-700 rounded-lg border-l-4 ${statusColor}">
-                        <div>
-                            <span class="font-bold text-lg">${o.school_name}</span>
-                            <p class="text-xs ${isExpired ? 'text-red-400 font-bold' : 'text-gray-400'}">
-                                Durum: ${o.status} | Bitiş: ${o.trial_end_date || 'Tanımlı Değil'}
-                            </p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="degistirDurum('${o.id}', '${o.status}')" class="bg-blue-600 px-3 py-1 rounded text-xs hover:bg-blue-700">AKTİF/PASİF</button>
-                            <button onclick="silOkul('${o.id}')" class="bg-red-600 px-3 py-1 rounded text-xs hover:bg-red-700">SİL</button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } else {
-                list.innerHTML = '<p class="text-gray-400">Henüz hiç okul tanımlanmamış.</p>';
-            }
-        }
-
-        window.degistirDurum = async (id, currentStatus) => {
-            const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
-            const { error } = await supabase.from('schools').update({ status: newStatus }).eq('id', id);
-            if (!error) fetchSchools(); else alert("Hata: " + error.message);
-        };
-
-        window.silOkul = async (id) => {
-            if (!confirm("Bu okulu silmek istediğine emin misin? (Bağlı kullanıcılar da silinecektir!)")) return;
-            const { error } = await supabase.from('schools').delete().eq('id', id);
-            if (!error) fetchSchools(); else alert("Hata: " + error.message);
-        };
-
-        document.getElementById('btnSistemiKur').onclick = async () => {
+        document.getElementById('btnKur').onclick = async () => {
             const okulAdi = document.getElementById('okulAdi').value;
-            const mudurEmail = document.getElementById('mudurEmail').value;
-            const mudurSifre = document.getElementById('mudurSifre').value;
+            const email = document.getElementById('mudurEmail').value;
+            const password = document.getElementById('mudurSifre').value;
 
-            if (!okulAdi || !mudurEmail || !mudurSifre) return alert("Tüm alanları doldur!");
+            if (!okulAdi || !email || !password) return alert("Hepsini doldur kanka!");
 
             try {
-                const { data, error } = await supabase.rpc('kur_sistemi', { 
-                    okul_adi: okulAdi, mudur_email: mudurEmail, mudur_sifre: mudurSifre 
+                // 1. Müdürü Auth sistemine ekle
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
                 });
-                if (error) throw error;
-                alert("✅ Sistem başarıyla kuruldu!");
-                fetchSchools();
-            } catch (err) { alert("❌ Hata: " + err.message); }
-        };
 
-        fetchSchools();
+                if (authError) throw authError;
+
+                // 2. Okulu ve Müdürü schools tablosuna bağla
+                const { error: schoolError } = await supabase
+                    .from('schools')
+                    .insert({ 
+                        school_name: okulAdi, 
+                        manager_email: email,
+                        status: 'Active'
+                    });
+
+                if (schoolError) throw schoolError;
+
+                alert("✅ Sistem başarıyla kuruldu! Müdür artık giriş yapabilir.");
+            } catch (err) {
+                alert("❌ Hata: " + err.message);
+            }
+        };
     </script>
 </body>
 </html>

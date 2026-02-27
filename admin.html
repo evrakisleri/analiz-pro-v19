@@ -44,7 +44,7 @@
             if (data && data.length > 0) {
                 list.innerHTML = data.map(o => {
                     const expiryDate = new Date(o.trial_end_date);
-                    const isExpired = expiryDate < today;
+                    const isExpired = o.trial_end_date && expiryDate < today;
                     const statusColor = o.status === 'Active' ? 'border-green-500' : 'border-red-500';
                     
                     return `

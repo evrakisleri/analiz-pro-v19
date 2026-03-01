@@ -2,50 +2,54 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Analiz Pro v19 - Master Admin</title>
-    <style>
-        body { font-family: sans-serif; padding: 30px; background: #f0f2f5; }
-        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; cursor: pointer; }
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    </style>
+    <title>Master Admin Paneli</title>
 </head>
 <body>
-
-<div class="box">
-    <h2>Sistem Yönetimi (Master Admin)</h2>
-    <input type="text" id="okulAdi" placeholder="Yeni Okul Adı">
-    <button id="btnKaydet">Okulu Sisteme Ekle</button>
-    
-    <hr>
-    <h3>Kayıtlı Okullar</h3>
-    <table id="okulListesi">
-        <thead><tr><th>Okul Adı</th></tr></thead>
+    <h2>🏫 Kontrol Merkezi</h2>
+    <button onclick="logout()">Çıkış Yap</button>
+    <table id="schoolTable">
+        <thead><tr><th>Okul Adı</th><th>Durum</th><th>İşlem</th></tr></thead>
         <tbody></tbody>
     </table>
-</div>
 
-<script type="module">
-    import { supabase } from './supabaseClient.js';
+    <script type="module">
+        import { supabase, authActions } from './supabaseClient.js';
 
-    // Okul Ekleme
-    document.getElementById('btnKaydet').onclick = async () => {
-        const ad = document.getElementById('okulAdi').value;
-        const { error } = await supabase.from('schools').insert([{ name: ad }]);
-        if (error) alert("Hata: " + error.message);
-        else { alert("Okul eklendi!"); location.reload(); }
-    };
+        async function init() {
+            if (!(await authActions.isAdmin())) {
+                alert("Yetkisiz Erişim!");
+                window.location.href = 'login.html';
+                return;
+            }
+            fetchData();
+        }
 
-    // Okulları Listeleme
-    async function listele() {
-        const { data } = await supabase.from('schools').select('*');
-        const tbody = document.querySelector('#okulListesi tbody');
-        tbody.innerHTML = data.map(s => `<tr><td>${s.name}</td></tr>`).join('');
-    }
-    listele();
-</script>
+        async function fetchData() {
+            const { data, error } = await supabase.from('schools').select('*');
+            if (error) return console.error("Veri hatası:", error.message);
+            
+            const tbody = document.querySelector('#schoolTable tbody');
+            tbody.innerHTML = data.map(s => `
+                <tr>
+                    <td>${s.name}</td>
+                    <td>${s.is_active ? '✅ Aktif' : '❌ Pasif'}</td>
+                    <td><button onclick="toggle('${s.id}', ${s.is_active})">Değiştir</button></td>
+                </tr>
+            `).join('');
+        }
 
+        window.toggle = async (id, status) => {
+            const { error } = await supabase.from('schools').update({ is_active: !status }).eq('id', id);
+            if (error) alert("Güncelleme hatası: " + error.message);
+            else fetchData();
+        };
+
+        window.logout = async () => {
+            await authActions.signOut();
+            window.location.href = 'login.html';
+        };
+
+        init();
+    </script>
 </body>
 </html>

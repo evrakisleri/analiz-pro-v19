@@ -1,47 +1,23 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 | Giriş</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-    </style>
-</head>
-<body class="bg-[#050505] min-h-screen flex items-center justify-center p-4">
-
-    <div class="glass-card p-8 rounded-2xl w-full max-w-sm shadow-2xl">
-        <div class="mb-8 text-center">
-            <h1 class="text-white text-2xl font-bold tracking-tight">ANALİZ PRO <span class="text-blue-500">v19</span></h1>
-            <p class="text-gray-400 text-sm mt-2">Sisteme erişmek için kimlik doğrula</p>
-        </div>
-
-        <div class="space-y-4">
-            <input id="email" type="email" placeholder="E-posta" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-blue-500 transition-all">
-            <input id="pass" type="password" placeholder="Şifre" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-blue-500 transition-all">
-            <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-lg transition-all duration-200">GİRİŞ YAP</button>
-        </div>
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white flex items-center justify-center h-screen">
+    <div class="bg-gray-900 p-8 rounded-xl w-80">
+        <h2 class="text-xl font-bold mb-4">ANALİZ PRO V19</h2>
+        <input id="email" type="email" placeholder="E-posta" class="w-full p-2 mb-2 bg-gray-800 rounded">
+        <input id="pass" type="password" placeholder="Şifre" class="w-full p-2 mb-4 bg-gray-800 rounded">
+        <button id="loginBtn" class="w-full bg-blue-600 p-2 rounded">GİRİŞ</button>
     </div>
-
     <script type="module">
         import { supabase } from './supabaseClient.js';
-        
         document.getElementById('loginBtn').onclick = async () => {
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('pass').value;
-            
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = "Doğrulanıyor...";
-            
-            const { data: auth, error } = await supabase.auth.signInWithPassword({ email, pass });
-            if (error) { alert("Hata: " + error.message); btn.innerText = "GİRİŞ YAP"; return; }
-            
-            const { data: profile } = await supabase.from('profiles').select('role').eq('id', auth.user.id).single();
-            
-            if (profile.role === 'admin') window.location.href = 'admin.html';
-            else if (profile.role === 'principal') window.location.href = 'principal.html';
-            else window.location.href = 'student.html';
+            const { data: auth, error } = await supabase.auth.signInWithPassword({
+                email: document.getElementById('email').value,
+                password: document.getElementById('pass').value
+            });
+            if (error) { alert(error.message); return; }
+            const { data: p } = await supabase.from('profiles').select('role').eq('id', auth.user.id).single();
+            window.location.href = p.role === 'admin' ? 'admin.html' : p.role === 'principal' ? 'principal.html' : 'student.html';
         };
     </script>
 </body>

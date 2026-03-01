@@ -1,15 +1,61 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="bg-black text-white p-8">
-    <h1 class="text-2xl font-bold mb-4">Master Admin Paneli</h1>
-    <table class="w-full bg-gray-900">
-        <tbody id="list"></tbody>
-    </table>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white p-10">
+    <h1 class="text-3xl font-bold text-blue-500 mb-8">ANALİZ PRO v19 - MASTER ADMIN</h1>
+    <div class="overflow-x-auto">
+        <table class="w-full bg-gray-900 rounded-lg shadow-lg">
+            <thead class="text-left border-b border-gray-800">
+                <tr>
+                    <th class="p-4">İsim</th>
+                    <th class="p-4">Rolü Güncelle</th>
+                    <th class="p-4">İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="userList"></tbody>
+        </table>
+    </div>
+
     <script type="module">
         import { supabase } from './supabaseClient.js';
-        const { data: users } = await supabase.from('profiles').select('*');
-        document.getElementById('list').innerHTML = users.map(u => `<tr><td class="p-2">${u.full_name}</td><td class="p-2">${u.role}</td></tr>`).join('');
+
+        async function loadData() {
+            const { data: users } = await supabase.from('profiles').select('*');
+            const tbody = document.getElementById('userList');
+            tbody.innerHTML = users.map(user => `
+                <tr class="border-b border-gray-800">
+                    <td class="p-4">${user.full_name || 'İsimsiz'}</td>
+                    <td class="p-4">
+                        <select onchange="updateRole('${user.id}', this.value)" class="bg-gray-800 p-1 rounded">
+                            <option value="student" ${user.role === 'student' ? 'selected' : ''}>Öğrenci</option>
+                            <option value="principal" ${user.role === 'principal' ? 'selected' : ''}>Müdür</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </td>
+                    <td class="p-4">
+                        <button onclick="deleteUser('${user.id}')" class="text-red-500 hover:text-red-700">Sil</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.updateRole = async (id, newRole) => {
+            const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', id);
+            if (error) alert("Hata: " + error.message);
+            else alert("Rol güncellendi!");
+        };
+
+        window.deleteUser = async (id) => {
+            if(confirm("Silmek istediğine emin misin?")) {
+                const { error } = await supabase.from('profiles').delete().eq('id', id);
+                if (error) alert("Hata: " + error.message);
+                else loadData();
+            }
+        };
+
+        loadData();
     </script>
 </body>
 </html>

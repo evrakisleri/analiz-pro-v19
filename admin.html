@@ -2,62 +2,42 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Analiz Pro v19 - Master Admin</title>
+    <title>Analiz Pro v19 - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-8">
-
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6 text-green-500">Sistem Kurulum Merkezi</h1>
-
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl">
-            <h2 class="text-xl font-bold mb-4">Yeni Okul ve Müdür Tanımla</h2>
-            <div class="grid grid-cols-1 gap-4 mb-4">
-                <input type="text" id="okulAdi" placeholder="Okul Adı" class="p-3 bg-gray-700 rounded border border-gray-600 outline-none">
-                <input type="email" id="mudurEmail" placeholder="Müdür E-posta" class="p-3 bg-gray-700 rounded border border-gray-600 outline-none">
-                <input type="password" id="mudurSifre" placeholder="Müdür Şifre (Min 6 Karakter)" class="p-3 bg-gray-700 rounded border border-gray-600 outline-none">
-            </div>
-            <button id="btnKur" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold transition">
-                SİSTEMİ KUR
-            </button>
+<body class="bg-gray-900 text-white p-10">
+    <div class="max-w-lg mx-auto bg-gray-800 p-8 rounded-xl shadow-2xl">
+        <h1 class="text-2xl font-bold mb-6 text-green-500">Sistem Yönetim Paneli</h1>
+        <div class="space-y-4">
+            <input id="okul" placeholder="Okul Adı" class="w-full p-3 bg-gray-700 rounded">
+            <input id="email" placeholder="Müdür E-posta" class="w-full p-3 bg-gray-700 rounded">
+            <input id="sifre" type="password" placeholder="Müdür Şifre" class="w-full p-3 bg-gray-700 rounded">
+            <button id="btnKur" class="w-full bg-green-600 p-3 rounded font-bold">SİSTEMİ KUR</button>
+            <button id="btnCikis" class="w-full bg-red-600 p-3 rounded font-bold">ÇIKIŞ YAP</button>
         </div>
     </div>
 
     <script type="module">
-        import { supabase } from './supabaseClient.js';
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        const supabase = createClient('SENIN_URL', 'SENIN_KEY');
 
         document.getElementById('btnKur').onclick = async () => {
-            const okulAdi = document.getElementById('okulAdi').value;
-            const email = document.getElementById('mudurEmail').value;
-            const password = document.getElementById('mudurSifre').value;
+            const { error: authErr } = await supabase.auth.signUp({ 
+                email: document.getElementById('email').value, 
+                password: document.getElementById('sifre').value 
+            });
+            if (authErr) return alert(authErr.message);
 
-            if (!okulAdi || !email || !password) return alert("Hepsini doldur kanka!");
+            const { error: rpcErr } = await supabase.rpc('kur_sistemi', { 
+                okul_adi: document.getElementById('okul').value, 
+                mudur_email: document.getElementById('email').value 
+            });
+            if (rpcErr) return alert(rpcErr.message);
 
-            try {
-                // 1. Müdürü Auth sistemine ekle
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: email,
-                    password: password
-                });
-
-                if (authError) throw authError;
-
-                // 2. Okulu ve Müdürü schools tablosuna bağla
-                const { error: schoolError } = await supabase
-                    .from('schools')
-                    .insert({ 
-                        school_name: okulAdi, 
-                        manager_email: email,
-                        status: 'Active'
-                    });
-
-                if (schoolError) throw schoolError;
-
-                alert("✅ Sistem başarıyla kuruldu! Müdür artık giriş yapabilir.");
-            } catch (err) {
-                alert("❌ Hata: " + err.message);
-            }
+            alert("✅ Sistem eksiksiz kuruldu!");
         };
+
+        document.getElementById('btnCikis').onclick = () => supabase.auth.signOut();
     </script>
 </body>
 </html>

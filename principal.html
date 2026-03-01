@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-950 text-white p-8">
-    <div class="max-w-xl mx-auto bg-gray-900 p-6 rounded-2xl shadow-2xl border border-gray-800">
-        <h1 class="text-2xl font-bold mb-6">Müdür: Toplu Öğrenci Atama</h1>
-        <input type="file" id="csvFile" class="w-full mb-4 p-2 bg-gray-800 rounded">
-        <button id="uploadBtn" class="w-full bg-blue-600 p-3 rounded-lg font-bold hover:bg-blue-500">YÜKLE VE ŞİFRELE</button>
-    </div>
-
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white p-8">
+    <h1 class="text-2xl font-bold mb-4">Müdür Paneli: Otomatik Öğrenci Atama</h1>
+    <input type="file" id="csvFile" class="mb-4">
+    <button id="uploadBtn" class="bg-green-600 p-2 rounded">YÜKLE</button>
     <script type="module">
         import { supabase } from './supabaseClient.js';
         document.getElementById('uploadBtn').onclick = async () => {
@@ -19,13 +14,10 @@
                 const lines = e.target.result.split('\n');
                 for (let line of lines) {
                     const [full_name, class_branch] = line.split(',');
-                    if (!full_name) continue;
-                    const pass = Math.random().toString(36).substring(2, 10);
-                    await supabase.from('profiles').insert([{ 
-                        full_name, class_branch, role: 'student', password: pass 
-                    }]);
+                    const pass = Math.random().toString(36).slice(-8);
+                    await supabase.from('profiles').insert([{ full_name, class_branch, role: 'student', password: pass }]);
                 }
-                alert("İşlem tamamlandı. Öğrenciler şifreleriyle atandı.");
+                alert("Öğrenciler şifreleriyle kaydedildi.");
             };
             reader.readAsText(file);
         };

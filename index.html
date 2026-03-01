@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analiz Pro v19 - Giriş</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -16,21 +17,43 @@
 
     <script type="module">
         import { supabase } from './supabaseClient.js';
+
         document.getElementById('loginBtn').onclick = async () => {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('pass').value;
             const msg = document.getElementById('msg');
             
             msg.innerText = "⏳ BAĞLANILIYOR...";
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
+
+            // 1. Giriş Yap
+            const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) { msg.innerText = "❌ HATA: " + error.message; return; }
 
-            const { data: userProfile } = await supabase.from('users').select('role').eq('email', email).single();
+            // 2. Profili Çek (Tablo: profiles)
+            const { data: userProfile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', authData.user.id)
+                .single();
+                
+            if (profileError) { 
+                msg.innerText = "❌ HATA: Profil verisi okunamadı!"; 
+                console.error(profileError);
+                return; 
+            }
+
+            // 3. Yönlendirme Mantığı
+            msg.innerText = "✅ YÖNLENDİRİLİYOR...";
             
-            if (userProfile?.role === 'admin') window.location.href = 'admin.html';
-            else if (userProfile?.role === 'teacher') window.location.href = 'teacher.html';
-            else window.location.href = 'student.html';
+            if (userProfile?.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else if (userProfile?.role === 'principal') {
+                window.location.href = 'principal.html';
+            } else if (userProfile?.role === 'teacher') {
+                window.location.href = 'teacher.html';
+            } else {
+                window.location.href = 'student.html';
+            }
         };
     </script>
 </body>

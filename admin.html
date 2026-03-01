@@ -1,25 +1,15 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-black text-white p-10">
-    <h1 class="text-3xl font-bold mb-8 text-blue-500">Master Admin Paneli</h1>
-    <table class="w-full text-left bg-gray-900 rounded-lg overflow-hidden">
-        <tbody id="userTable"></tbody>
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white p-8">
+    <h1 class="text-2xl font-bold mb-4">Master Admin Paneli</h1>
+    <table class="w-full bg-gray-900">
+        <tbody id="list"></tbody>
     </table>
-
     <script type="module">
         import { supabase } from './supabaseClient.js';
         const { data: users } = await supabase.from('profiles').select('*');
-        document.getElementById('userTable').innerHTML = users.map(u => `
-            <tr class="border-b border-gray-800">
-                <td class="p-4">${u.full_name}</td>
-                <td class="p-4">${u.role}</td>
-                <td class="p-4 text-red-500 cursor-pointer" onclick="del('${u.id}')">SİL</td>
-            </tr>
-        `).join('');
-        window.del = async (id) => { await supabase.from('profiles').delete().eq('id', id); location.reload(); };
+        document.getElementById('list').innerHTML = users.map(u => `<tr><td class="p-2">${u.full_name}</td><td class="p-2">${u.role}</td></tr>`).join('');
     </script>
 </body>
 </html>

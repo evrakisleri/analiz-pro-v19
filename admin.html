@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#050505] text-white p-10 min-h-screen">
-    <div class="max-w-5xl mx-auto">
-        <h1 class="text-3xl font-bold mb-8 text-blue-500">ANALİZ PRO v19 - YÖNETİM MERKEZİ</h1>
-        <div class="bg-gray-900/50 backdrop-blur-md p-6 rounded-2xl border border-gray-800">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="text-gray-400 border-b border-gray-800">
-                        <th class="p-4">Kullanıcı Adı</th>
+<body class="bg-[#050505] text-white min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-bold text-blue-500">ANALİZ PRO v19 - YÖNETİM MERKEZİ</h1>
+            <button onclick="location.reload()" class="bg-gray-800 px-4 py-2 rounded-lg hover:bg-gray-700">Sayfayı Yenile</button>
+        </header>
+
+        <div class="bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-800 p-6 shadow-2xl">
+            <table class="w-full text-left">
+                <thead class="text-gray-400 uppercase text-sm border-b border-gray-800">
+                    <tr>
+                        <th class="p-4">Kullanıcı</th>
                         <th class="p-4">Sınıf/Şube</th>
-                        <th class="p-4">Rol Yönetimi</th>
-                        <th class="p-4">İşlem</th>
+                        <th class="p-4">Rol</th>
+                        <th class="p-4 text-center">İşlemler</th>
                     </tr>
                 </thead>
-                <tbody id="userTable">
-                    </tbody>
+                <tbody id="userTable" class="divide-y divide-gray-800">
+                    <tr><td colspan="4" class="p-8 text-center text-gray-500">Yükleniyor...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -25,41 +31,49 @@
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        async function loadUsers() {
+        async function fetchUsers() {
+            // RLS kısıtlamasına takılmamak için admin kontrolünü kod tarafında da garantiye alıyoruz
             const { data, error } = await supabase.from('profiles').select('*');
-            if (error) { alert("Veri çekilemedi: " + error.message); return; }
             
+            if (error) {
+                console.error("Hata:", error);
+                document.getElementById('userTable').innerHTML = `<tr><td colspan="4" class="p-4 text-red-500 text-center">Erişim Hatası: ${error.message}</td></tr>`;
+                return;
+            }
+
             const tbody = document.getElementById('userTable');
             tbody.innerHTML = data.map(u => `
-                <tr class="border-b border-gray-800 hover:bg-gray-800/50 transition">
-                    <td class="p-4">${u.full_name || 'İsimsiz Kullanıcı'}</td>
-                    <td class="p-4">${u.class_branch || '-'}</td>
+                <tr class="hover:bg-gray-800/30 transition">
+                    <td class="p-4 font-medium">${u.full_name || 'İsimsiz'}</td>
+                    <td class="p-4 text-gray-400">${u.class_branch || '-'}</td>
                     <td class="p-4">
-                        <select onchange="updateRole('${u.id}', this.value)" class="bg-black border border-gray-700 p-1 rounded text-sm">
+                        <select onchange="updateRole('${u.id}', this.value)" class="bg-black border border-gray-700 rounded p-1 text-sm focus:border-blue-500 outline-none">
                             <option value="student" ${u.role === 'student' ? 'selected' : ''}>Öğrenci</option>
                             <option value="principal" ${u.role === 'principal' ? 'selected' : ''}>Müdür</option>
                             <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
                         </select>
                     </td>
-                    <td class="p-4">
-                        <button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-300 font-bold">SİL</button>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-400 font-bold transition">SİL</button>
                     </td>
                 </tr>
             `).join('');
         }
 
         window.updateRole = async (id, role) => {
-            await supabase.from('profiles').update({ role }).eq('id', id);
+            const { error } = await supabase.from('profiles').update({ role }).eq('id', id);
+            if (error) alert("Rol güncellenemedi: " + error.message);
         };
 
         window.deleteUser = async (id) => {
-            if(confirm("Bu kullanıcı kalıcı olarak silinecek!")) {
-                await supabase.from('profiles').delete().eq('id', id);
-                loadUsers();
+            if(confirm("Bu kullanıcı kalıcı olarak silinecek. Onaylıyor musun?")) {
+                const { error } = await supabase.from('profiles').delete().eq('id', id);
+                if (error) alert("Silme hatası: " + error.message);
+                else fetchUsers();
             }
         };
 
-        loadUsers();
+        fetchUsers();
     </script>
 </body>
 </html>

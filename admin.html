@@ -2,74 +2,19 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Yönetim Paneli - Admin</title>
+    <title>Admin Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-950 text-white min-h-screen p-8">
-    <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-blue-500 italic">SİSTEM YÖNETİM PANELİ (ADMIN)</h1>
-            <button onclick="logout()" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">Çıkış Yap</button>
-        </div>
-
-        <table class="w-full bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
-            <thead class="bg-gray-800">
-                <tr>
-                    <th class="p-3 text-left">Kullanıcı</th>
-                    <th class="p-3 text-left">Rol</th>
-                    <th class="p-3 text-left">İşlem</th>
-                </tr>
-            </thead>
-            <tbody id="userTableBody">
-                </tbody>
-        </table>
-    </div>
-
+<body class="bg-gray-950 text-white p-10">
+    <h1 class="text-2xl font-bold text-blue-500">ADMIN PANELİ</h1>
     <script type="module">
         import { supabase } from './supabaseClient.js';
-
-        async function init() {
-            // 1. Oturum Kontrolü
+        async function check() {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { window.location.href = 'index.html'; return; }
-
-            // 2. Yetki Kontrolü (Sadece 'admin' girebilir)
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', user.id)
-                .single();
-
-            if (!profile || profile.role !== 'admin') {
-                alert("Erişim Reddedildi: Admin değilsin!");
-                window.location.href = 'index.html';
-                return;
-            }
-
-            fetchUsers();
+            const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+            if (profile?.role !== 'admin') window.location.href = 'index.html';
         }
-
-        async function fetchUsers() {
-            // 3. Veri Çekme (profiles tablosundan)
-            const { data, error } = await supabase.from('profiles').select('*');
-            if (error) { console.error("Veri çekme hatası:", error); return; }
-
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = data.map(u => `
-                <tr class="border-b border-gray-800">
-                    <td class="p-3">${u.full_name || 'İsimsiz'}</td>
-                    <td class="p-3 uppercase text-xs font-bold">${u.role}</td>
-                    <td class="p-3"><button class="text-blue-400 hover:underline">Düzenle</button></td>
-                </tr>
-            `).join('');
-        }
-
-        window.logout = async () => {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        };
-
-        init();
+        check();
     </script>
 </body>
 </html>

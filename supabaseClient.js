@@ -1,4 +1,3 @@
-// supabaseClient.js (Revize Edilmiş)
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const supabaseUrl = "https://sjwndltsoscueesxwkny.supabase.co";
@@ -6,12 +5,24 @@ const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// 1. Email ile giriş (Müdürler bunu kullanacak)
-export async function signInWithEmail(email, password) {
-  return await supabase.auth.signInWithPassword({ email, password });
-}
+export const authActions = {
+    // Giriş (Email)
+    signInEmail: async (email, password) => await supabase.auth.signInWithPassword({ email, password }),
+    
+    // Giriş (GitHub)
+    signInGitHub: async () => await supabase.auth.signInWithOAuth({ provider: 'github' }),
+    
+    // Çıkış (Hata Yönetimli)
+    signOut: async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw new Error("Çıkış hatası: " + error.message);
+    },
 
-// 2. GitHub ile giriş (Sadece Master Admin için)
-export async function signInWithGitHub() {
-  return await supabase.auth.signInWithOAuth({ provider: 'github' });
-}
+    // Admin mi? (Rol Kontrolü)
+    isAdmin: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+        const { data, error } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        return (!error && data.role === 'admin');
+    }
+};

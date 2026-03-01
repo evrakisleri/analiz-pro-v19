@@ -1,78 +1,50 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 - Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Analiz Pro v19 - Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
-
-    <div class="w-full max-w-md bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
-        <h1 class="text-3xl font-bold mb-6 text-green-500 text-center">Sistem Yönetim Paneli</h1>
-        
-        <div class="space-y-4">
-            <input id="okul" type="text" placeholder="Okul Adı" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-500 transition">
-            <input id="email" type="email" placeholder="Müdür E-posta" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-500 transition">
-            <input id="sifre" type="password" placeholder="Müdür Şifre" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-500 transition">
-            
-            <button id="btnKur" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
-                SİSTEMİ KUR
-            </button>
-            
-            <button id="btnCikis" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition duration-200">
-                ÇIKIŞ YAP
-            </button>
-        </div>
-        
-        <div id="mesaj" class="mt-4 text-center text-sm font-medium"></div>
+<body class="bg-gray-900 text-white p-10">
+  <div class="max-w-md mx-auto bg-gray-800 p-8 rounded-xl shadow-2xl">
+    <h1 class="text-2xl font-bold mb-6 text-green-500">Sistem Yönetim Paneli</h1>
+    <div class="space-y-4">
+      <input id="okul" placeholder="Okul Adı" class="w-full p-3 bg-gray-700 rounded">
+      <input id="email" placeholder="Müdür E-posta" class="w-full p-3 bg-gray-700 rounded">
+      <input id="sifre" type="password" placeholder="Müdür Şifre" class="w-full p-3 bg-gray-700 rounded">
+      <button id="btnKur" class="w-full bg-green-600 p-3 rounded font-bold hover:bg-green-700">SİSTEMİ KUR</button>
     </div>
+    <div id="durum" class="mt-4 text-center text-sm"></div>
+  </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  <script type="module">
+    import { supabase } from './benimsupabase/supabaseClient.js';
 
-        // Supabase Bağlantısı
-        const supabaseUrl = 'https://ocigkkawnfswgtbbehvn.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jaWdra2F3bmZzd2d0YmJlaHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjI4MDksImV4cCI6MjA4NzYzODgwOX0.nXUrnB7SZHFZ0YQ5fUQTsbIgGxQ0xAr_Gk1aODd-du0';
-        
-        const supabase = createClient(supabaseUrl, supabaseKey);
+    document.getElementById('btnKur').onclick = async () => {
+      const okul = document.getElementById('okul').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const sifre = document.getElementById('sifre').value.trim();
+      const durum = document.getElementById('durum');
 
-        const mesajDiv = document.getElementById('mesaj');
+      if (!okul || !email || !sifre) return alert("Tüm alanları doldur!");
 
-        // Kurulum Fonksiyonu
-        document.getElementById('btnKur').onclick = async () => {
-            const okul = document.getElementById('okul').value;
-            const email = document.getElementById('email').value;
-            const sifre = document.getElementById('sifre').value;
+      durum.innerHTML = "İşleniyor...";
 
-            if (!okul || !email || !sifre) {
-                return mesajDiv.innerHTML = '<span class="text-red-500">Lütfen tüm alanları doldur!</span>';
-            }
+      try {
+        const { error: authErr } = await supabase.auth.signUp({ email, password: sifre });
+        if (authErr) throw authErr;
 
-            mesajDiv.innerHTML = '<span class="text-blue-400">Kuruluyor...</span>';
+        const { error: rpcErr } = await supabase.rpc('kur_sistemi', { 
+          okul_adi: okul, 
+          mudur_email: email 
+        });
+        if (rpcErr) throw rpcErr;
 
-            // 1. Müdür için auth hesabı oluştur
-            const { error: authErr } = await supabase.auth.signUp({ email, password: sifre });
-            if (authErr) return mesajDiv.innerHTML = `<span class="text-red-500">Auth Hatası: ${authErr.message}</span>`;
-
-            // 2. Veritabanına kayıt at (RPC çağrısı)
-            const { error: rpcErr } = await supabase.rpc('kur_sistemi', { 
-                okul_adi: okul, 
-                mudur_email: email 
-            });
-
-            if (rpcErr) {
-                mesajDiv.innerHTML = `<span class="text-red-500">Hata: ${rpcErr.message}</span>`;
-            } else {
-                mesajDiv.innerHTML = '<span class="text-green-500">✅ Sistem eksiksiz kuruldu!</span>';
-            }
-        };
-
-        // Çıkış Yap
-        document.getElementById('btnCikis').onclick = async () => {
-            await supabase.auth.signOut();
-            window.location.reload();
-        };
-    </script>
+        durum.innerHTML = "✅ Sistem başarıyla kuruldu!";
+      } catch (err) {
+        durum.innerHTML = "❌ Hata: " + err.message;
+      }
+    };
+  </script>
 </body>
 </html>

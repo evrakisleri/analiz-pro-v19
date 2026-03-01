@@ -2,55 +2,49 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Pro v19 | Admin Paneli</title>
+    <title>Analiz Pro v19 - Master Admin</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f7f6; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; }
-        .card { padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
-        button { padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #2980b9; }
+        body { font-family: sans-serif; padding: 30px; background: #f0f2f5; }
+        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; cursor: pointer; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Admin Paneli</h1>
-    <p>Sistem genel yönetimi ve okul tanımlama merkezi.</p>
-
-    <div class="card">
-        <h3>Yeni Okul Tanımla</h3>
-        <input type="text" id="okulAdi" placeholder="Okul Adı">
-        <button id="btnOkulEkle">Okulu Kaydet</button>
-    </div>
-
-    <div id="statusMessage"></div>
+<div class="box">
+    <h2>Sistem Yönetimi (Master Admin)</h2>
+    <input type="text" id="okulAdi" placeholder="Yeni Okul Adı">
+    <button id="btnKaydet">Okulu Sisteme Ekle</button>
+    
+    <hr>
+    <h3>Kayıtlı Okullar</h3>
+    <table id="okulListesi">
+        <thead><tr><th>Okul Adı</th></tr></thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <script type="module">
     import { supabase } from './supabaseClient.js';
 
-    // Okul ekleme fonksiyonu
-    document.getElementById('btnOkulEkle').onclick = async () => {
-        const okulAdi = document.getElementById('okulAdi').value.trim();
-        const msg = document.getElementById('statusMessage');
-
-        if (!okulAdi) return alert("Lütfen bir okul adı girin.");
-
-        const { data, error } = await supabase
-            .from('schools')
-            .insert([{ name: okulAdi }]);
-
-        if (error) {
-            msg.innerText = "Hata: " + error.message;
-            msg.style.color = "red";
-        } else {
-            msg.innerText = "Başarılı: " + okulAdi + " sisteme eklendi.";
-            msg.style.color = "green";
-            document.getElementById('okulAdi').value = '';
-        }
+    // Okul Ekleme
+    document.getElementById('btnKaydet').onclick = async () => {
+        const ad = document.getElementById('okulAdi').value;
+        const { error } = await supabase.from('schools').insert([{ name: ad }]);
+        if (error) alert("Hata: " + error.message);
+        else { alert("Okul eklendi!"); location.reload(); }
     };
+
+    // Okulları Listeleme
+    async function listele() {
+        const { data } = await supabase.from('schools').select('*');
+        const tbody = document.querySelector('#okulListesi tbody');
+        tbody.innerHTML = data.map(s => `<tr><td>${s.name}</td></tr>`).join('');
+    }
+    listele();
 </script>
 
 </body>

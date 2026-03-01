@@ -1,7 +1,17 @@
+// supabaseClient.js (Revize Edilmiş)
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// URL'i tam olarak şu formatta yaz:
-const supabaseUrl = 'https://krhxjjmfzfiraemloksl.supabase.co'; 
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaHhqam1memZpcmFlbWxva3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTA4OTUsImV4cCI6MjA4Nzk2Njg5NX0.TotlpNCTkt6poP1_vWk1UIDlQlfY58ca25hvzn36VbY';
+const supabaseUrl = "https://sjwndltsoscueesxwkny.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqd25kbHRzb3NjdWVlc3h3a255Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTI5OTUsImV4cCI6MjA4Nzk2ODk5NX0.bu6kjNfLj_5Y7_Aq__KxTAQjmMS71M3fw_9GFVJ-wDk";
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// 1. Email ile giriş (Müdürler bunu kullanacak)
+export async function signInWithEmail(email, password) {
+  return await supabase.auth.signInWithPassword({ email, password });
+}
+
+// 2. GitHub ile giriş (Sadece Master Admin için)
+export async function signInWithGitHub() {
+  return await supabase.auth.signInWithOAuth({ provider: 'github' });
+}

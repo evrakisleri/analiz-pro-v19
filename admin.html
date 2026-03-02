@@ -2,36 +2,41 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Admin - Analiz Pro v19</title>
+    <title>Master Admin | Yönetim Üssü</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 </head>
 <body class="bg-[#050505] text-white p-8">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-10 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-blue-500">ANALİZ PRO v19 | MASTER ADMIN</h1>
-                <p class="text-gray-400 text-sm">Kurum ve Yönetici Denetim Paneli</p>
-            </div>
-            <button onclick="location.reload()" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition">Sistemi Yenile</button>
+        <header class="mb-10">
+            <h1 class="text-3xl font-bold text-blue-500">ANALİZ PRO v19 | MASTER ADMIN</h1>
+            <p class="text-gray-400">Sistem Denetim ve Kurum Yönetimi</p>
         </header>
 
-        <div class="bg-gray-900 p-6 rounded-2xl mb-8 border border-gray-800 flex gap-4">
-            <input id="schoolName" placeholder="Yeni Okul/Kurum Adı" class="flex-1 bg-black p-3 rounded-lg border border-gray-700 outline-none focus:border-blue-500">
-            <button id="addBtn" class="bg-blue-600 hover:bg-blue-500 px-8 rounded-lg font-bold transition">OKUL EKLE</button>
+        <!-- Okul Ekle -->
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 mb-8 flex gap-4">
+            <input id="schoolName" placeholder="Yeni Okul Adı..." class="flex-1 bg-black p-3 rounded-lg border border-gray-700 outline-none focus:border-blue-500">
+            <button onclick="addSchool()" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-lg font-bold">OKUL EKLE</button>
         </div>
 
-        <div class="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 shadow-2xl">
+        <!-- Okul Listesi -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
             <table class="w-full text-left">
-                <thead class="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider">
-                    <tr>
-                        <th class="p-4">Okul Adı</th>
-                        <th class="p-4">Yetkili Müdür</th>
-                        <th class="p-4 text-right">İşlem</th>
-                    </tr>
+                <thead class="bg-gray-800 text-gray-400 uppercase text-xs">
+                    <tr><th class="p-4">Okul Adı</th><th class="p-4">Atanan Müdür</th><th class="p-4 text-right">İşlem</th></tr>
                 </thead>
                 <tbody id="schoolTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Audit Log Tablosu -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden mt-10">
+            <h2 class="p-4 text-blue-400 font-bold">Audit Log (Son İşlemler)</h2>
+            <table class="w-full text-left">
+                <thead class="bg-gray-800 text-gray-400 uppercase text-xs">
+                    <tr><th class="p-4">İşlem</th><th class="p-4">Detay</th><th class="p-4">Tarih</th></tr>
+                </thead>
+                <tbody id="logTable"></tbody>
             </table>
         </div>
     </div>
@@ -40,66 +45,94 @@
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        // Profesyonel Bildirim
-        const notify = (m, t="success") => Toastify({
-            text: m, 
-            duration: 3000, 
-            style: { background: t==="success"?"#2563eb":"#dc2626", borderRadius: "8px" }
-        }).showToast();
-
-        // Audit Loglama
+        // Audit Log Fonksiyonu (opsiyonel, trigger varsa gerek yok ama UI için bırakıyoruz)
         async function logAction(action, details) {
             const { data: { user } } = await supabase.auth.getUser();
             await supabase.from('audit_logs').insert({ admin_id: user?.id, action, details });
         }
 
+        // Okul Listesi
         async function load() {
-            const { data: s } = await supabase.from('schools').select('*, profiles(full_name)');
-            const { data: p } = await supabase.from('profiles').select('id, full_name').eq('role', 'principal');
+            const { data: schools, error } = await supabase.from('schools').select('*, profiles(full_name)');
+            if (error) {
+                Toastify({ text: "Hata: " + error.message, style: { background: "#dc2626" } }).showToast();
+                return;
+            }
+            const { data: principals } = await supabase.from('profiles').select('id, full_name').eq('role', 'principal');
             
-            const tbody = document.getElementById('schoolTable');
-            tbody.innerHTML = s.map(item => `
+            document.getElementById('schoolTable').innerHTML = schools.map(s => `
                 <tr class="border-b border-gray-800 hover:bg-white/5 transition">
-                    <td class="p-4 font-medium">${item.name}</td>
+                    <td class="p-4">${s.name}</td>
                     <td class="p-4">
-                        <select onchange="updateMudur('${item.id}', this.value, '${item.name}')" class="bg-black p-2 rounded border border-gray-700 text-sm w-48">
-                            <option value="">Müdür Atanmadı</option>
-                            ${p.map(mgr => `<option value="${mgr.id}" ${item.principal_id === mgr.id ? 'selected' : ''}>${mgr.full_name}</option>`).join('')}
+                        <select onchange="updateMudur('${s.id}', this.value, '${s.name}')" class="bg-black p-2 rounded border border-gray-700 text-sm">
+                            <option value="">Seçilmedi</option>
+                            ${principals.map(p => `<option value="${p.id}" ${s.principal_id === p.id ? 'selected' : ''}>${p.full_name}</option>`).join('')}
                         </select>
                     </td>
-                    <td class="p-4 text-right">
-                        <button onclick="del('${item.id}', '${item.name}')" class="text-red-500 hover:text-red-400 text-sm font-bold">SİSTEMDEN KALDIR</button>
-                    </td>
+                    <td class="p-4 text-right"><button onclick="delSchool('${s.id}', '${s.name}')" class="text-red-500">SİL</button></td>
                 </tr>
             `).join('');
         }
 
-        window.updateMudur = async (sid, pid, name) => {
-            await supabase.from('schools').update({ principal_id: pid || null }).eq('id', sid);
-            logAction('MUDUR_ATANDI', { okul: name, yeni_mudur_id: pid });
-            notify("Müdür ataması güncellendi.");
-        };
-
-        document.getElementById('addBtn').onclick = async () => {
-            const name = document.getElementById('schoolName').value;
-            if (!name) return notify("Lütfen bir isim girin!", "err");
-            await supabase.from('schools').insert({ name });
-            logAction('OKUL_EKLENDI', { name });
-            document.getElementById('schoolName').value = '';
-            notify("Okul sisteme eklendi.");
-            load();
-        };
-
-        window.del = async (id, name) => {
-            if(confirm(`${name} kurumunu silmek istediğine emin misin?`)) {
-                await supabase.from('schools').delete().eq('id', id);
-                logAction('OKUL_SILINDI', { name });
-                notify("Kurum başarıyla silindi.", "err");
-                load();
+        // Audit Logları Çekme
+        async function loadLogs() {
+            const { data: logs, error } = await supabase
+                .from('audit_logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(10);
+            if (error) {
+                Toastify({ text: "Log Hatası: " + error.message, style: { background: "#dc2626" } }).showToast();
+                return;
             }
+            document.getElementById('logTable').innerHTML = logs.map(l => `
+                <tr class="border-b border-gray-800">
+                    <td class="p-4">${l.action}</td>
+                    <td class="p-4 text-gray-400">${JSON.stringify(l.details)}</td>
+                    <td class="p-4 text-gray-500">${new Date(l.created_at).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // İşlemler
+        window.addSchool = async () => {
+            const name = document.getElementById('schoolName').value;
+            const { error } = await supabase.from('schools').insert({ name });
+            if (error) {
+                Toastify({ text: "Hata: " + error.message, style: { background: "#dc2626" } }).showToast();
+                return;
+            }
+            Toastify({ text: "Okul eklendi!", style: { background: "#16a34a" } }).showToast();
+            await logAction('OKUL_EKLENDI', { name });
+            load();
+            loadLogs();
+        };
+
+        window.updateMudur = async (sid, pid, sname) => {
+            const { error } = await supabase.from('schools').update({ principal_id: pid || null }).eq('id', sid);
+            if (error) {
+                Toastify({ text: "Hata: " + error.message, style: { background: "#dc2626" } }).showToast();
+                return;
+            }
+            await logAction('MUDUR_ATANDI', { okul: sname, mudur_id: pid });
+            Toastify({ text: "Güncellendi!", style: { background: "#2563eb" } }).showToast();
+            loadLogs();
+        };
+
+        window.delSchool = async (id, name) => {
+            const { error } = await supabase.from('schools').delete().eq('id', id);
+            if (error) {
+                Toastify({ text: "Silme Hatası: " + error.message, style: { background: "#dc2626" } }).showToast();
+                return;
+            }
+            await logAction('OKUL_SILINDI', { name });
+            Toastify({ text: "Okul silindi!", style: { background: "#dc2626" } }).showToast();
+            load();
+            loadLogs();
         };
 
         load();
+        loadLogs();
     </script>
 </body>
 </html>

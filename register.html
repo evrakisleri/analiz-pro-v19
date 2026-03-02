@@ -1,0 +1,18 @@
+<input type="text" id="invite_code" placeholder="Okul Davet Kodunu Gir">
+<button onclick="kayitOl()">Kayıt Ol ve Okuluna Bağlan</button>
+
+<script>
+async function kayitOl() {
+    const code = document.getElementById('invite_code').value;
+    
+    // Supabase RPC ile veritabanındaki 'join_school' prosedürünü çağırıyoruz
+    const { data, error } = await supabase.rpc('join_school', { code: code });
+
+    if (error) {
+        alert("Hata: " + error.message);
+    } else {
+        alert("Başarılı! Artık okuluna atandın.");
+        window.location.href = 'principal-dashboard.html';
+    }
+}
+</script>

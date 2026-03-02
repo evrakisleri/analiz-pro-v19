@@ -1,25 +1,63 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head><script src="https://cdn.tailwindcss.com"></script></head>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 <body class="bg-black text-white p-8">
-    <h1 class="text-2xl font-bold mb-4">Müdür Paneli: Otomatik Öğrenci Atama</h1>
-    <input type="file" id="csvFile" class="mb-4">
-    <button id="uploadBtn" class="bg-green-600 p-2 rounded">YÜKLE</button>
+    <div class="max-w-md mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Müdür Paneli: Toplu Öğrenci Yükleme</h1>
+        <p class="text-gray-400 mb-6 text-sm">CSV Formatı: İsim Soyisim, Sınıf/Şube</p>
+        
+        <input type="file" id="csvFile" class="mb-4 w-full bg-gray-800 p-2 rounded">
+        <button id="uploadBtn" class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">
+            ÖĞRENCİLERİ YÜKLE
+        </button>
+    </div>
+
     <script type="module">
         import { supabase } from './supabaseClient.js';
+
         document.getElementById('uploadBtn').onclick = async () => {
-            const file = document.getElementById('csvFile').files[0];
+            const fileInput = document.getElementById('csvFile');
+            if (!fileInput.files[0]) return alert("Lütfen bir CSV dosyası seç!");
+
+            // 1. Giriş yapmış müdürün bilgilerini ve okulunu al
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('school_id')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile?.school_id) {
+                return alert("Hata: Okulunuz tanımlı değil. Lütfen admin ile iletişime geçin.");
+            }
+
+            const schoolId = profile.school_id;
+
+            // 2. CSV dosyasını oku ve işle
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const lines = e.target.result.split('\n');
+                let count = 0;
+
                 for (let line of lines) {
                     const [full_name, class_branch] = line.split(',');
-                    const pass = Math.random().toString(36).slice(-8);
-                    await supabase.from('profiles').insert([{ full_name, class_branch, role: 'student', password: pass }]);
+                    if (!full_name || !class_branch) continue;
+
+                    // 3. Öğrenciyi okul ID'si ile 'profiles' tablosuna ekle
+                    const { error } = await supabase.from('profiles').insert([{ 
+                        full_name: full_name.trim(), 
+                        class_branch: class_branch.trim(), 
+                        role: 'student',
+                        school_id: schoolId 
+                    }]);
+
+                    if (!error) count++;
                 }
-                alert("Öğrenciler şifreleriyle kaydedildi.");
+                alert(count + " öğrenci okulunuza başarıyla eklendi!");
             };
-            reader.readAsText(file);
+            reader.readAsText(fileInput.files[0]);
         };
     </script>
 </body>

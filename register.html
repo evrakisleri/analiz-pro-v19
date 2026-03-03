@@ -1,18 +1,31 @@
-<input type="text" id="invite_code" placeholder="Okul Davet Kodunu Gir">
-<button onclick="kayitOl()">Kayıt Ol ve Okuluna Bağlan</button>
-
-<script>
-async function kayitOl() {
-    const code = document.getElementById('invite_code').value;
-    
-    // Supabase RPC ile veritabanındaki 'join_school' prosedürünü çağırıyoruz
-    const { data, error } = await supabase.rpc('join_school', { code: code });
-
-    if (error) {
-        alert("Hata: " + error.message);
-    } else {
-        alert("Başarılı! Artık okuluna atandın.");
-        window.location.href = 'principal-dashboard.html';
-    }
-}
-</script>
+<!DOCTYPE html>
+<html lang="tr">
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white flex items-center justify-center min-h-screen">
+    <div class="p-8 bg-gray-900 rounded-lg w-96">
+        <h2 class="text-xl font-bold mb-4">Müdür Kayıt</h2>
+        <input type="email" id="email" placeholder="E-posta" class="w-full p-2 mb-2 bg-gray-800 rounded">
+        <input type="password" id="password" placeholder="Şifre" class="w-full p-2 mb-2 bg-gray-800 rounded">
+        <input type="text" id="invite_code" placeholder="Davet Kodu" class="w-full p-2 mb-4 bg-gray-800 rounded">
+        <button onclick="kayitOl()" class="w-full bg-blue-600 p-2 rounded">Kayıt Ol</button>
+    </div>
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+        window.kayitOl = async () => {
+            const { error: authError } = await supabase.auth.signUp({ 
+                email: document.getElementById('email').value, 
+                password: document.getElementById('password').value 
+            });
+            if (authError) return alert(authError.message);
+            
+            const { error: rpcError } = await supabase.rpc('join_school', { 
+                code: document.getElementById('invite_code').value 
+            });
+            
+            if (rpcError) return alert("Hata: " + rpcError.message);
+            alert("Başarılı!");
+            window.location.href = 'principal.html';
+        }
+    </script>
+</body>
+</html>

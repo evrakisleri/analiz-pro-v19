@@ -1,64 +1,151 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müdür Operasyon Merkezi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-black text-white p-8">
-    <div class="max-w-md mx-auto">
-        <h1 class="text-2xl font-bold mb-4">Müdür Paneli: Toplu Öğrenci Yükleme</h1>
-        <p class="text-gray-400 mb-6 text-sm">CSV Formatı: İsim Soyisim, Sınıf/Şube</p>
-        
-        <input type="file" id="csvFile" class="mb-4 w-full bg-gray-800 p-2 rounded">
-        <button id="uploadBtn" class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">
-            ÖĞRENCİLERİ YÜKLE
-        </button>
+<body class="bg-gray-950 text-white min-h-screen">
+
+    <nav class="bg-gray-900 border-b border-gray-800 p-4 flex gap-6 justify-center sticky top-0 z-10 shadow-lg">
+        <button onclick="showSection('dashboard')" class="text-blue-400 font-bold hover:text-white transition">Dashboard</button>
+        <button onclick="showSection('students')" class="text-blue-400 font-bold hover:text-white transition">Öğrenciler</button>
+        <button onclick="showSection('teachers')" class="text-blue-400 font-bold hover:text-white transition">Öğretmenler</button>
+        <button onclick="showSection('audit')" class="text-blue-400 font-bold hover:text-white transition">Süreç Takibi</button>
+    </nav>
+
+    <div id="app" class="max-w-5xl mx-auto p-8">
+
+        <section id="dashboard" class="space-y-6">
+            <h1 class="text-3xl font-bold mb-8">Okul Komuta Merkezi</h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center shadow-md">
+                    <h2 class="text-gray-400 text-sm uppercase">Toplam Öğrenci</h2>
+                    <p id="studentCount" class="text-4xl font-bold mt-2">0</p>
+                </div>
+                <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center shadow-md">
+                    <h2 class="text-gray-400 text-sm uppercase">Aktif Öğretmen</h2>
+                    <p id="teacherCount" class="text-4xl font-bold mt-2">0</p>
+                </div>
+                <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center shadow-md">
+                    <h2 class="text-gray-400 text-sm uppercase">Bekleyen Sınav</h2>
+                    <p id="pendingExams" class="text-4xl font-bold mt-2">0</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="students" class="hidden bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-md">
+            <h2 class="text-2xl font-bold mb-6">Toplu Öğrenci Yükleme</h2>
+            <div class="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700">
+                <input type="file" id="csvFile" class="w-full">
+            </div>
+            <button onclick="uploadStudents()" class="w-full bg-blue-600 p-4 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg">SİSTEME AKTAR</button>
+        </section>
+
+        <section id="teachers" class="hidden bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-md">
+            <h2 class="text-2xl font-bold mb-6">Öğretmen Kadrosu</h2>
+            <div class="flex gap-2 mb-6">
+                <input type="email" id="teacherEmail" placeholder="Öğretmen e-posta adresi..." class="flex-1 bg-gray-800 p-3 rounded-lg border border-gray-700">
+                <button onclick="addTeacher()" class="bg-green-600 px-6 rounded-lg font-bold hover:bg-green-700 transition">YETKİLENDİR</button>
+            </div>
+            <table class="w-full text-left">
+                <thead class="bg-gray-800 text-gray-400 text-xs uppercase">
+                    <tr><th class="p-4">E-posta</th><th class="p-4 text-right">İşlem</th></tr>
+                </thead>
+                <tbody id="teacherTable"></tbody>
+            </table>
+        </section>
+
+        <section id="audit" class="hidden bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-md">
+            <h2 class="text-2xl font-bold mb-6">Sınav ve İşlem Takibi</h2>
+            <div id="auditLogList" class="space-y-4"></div>
+        </section>
     </div>
 
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        document.getElementById('uploadBtn').onclick = async () => {
-            const fileInput = document.getElementById('csvFile');
-            if (!fileInput.files[0]) return alert("Lütfen bir CSV dosyası seç!");
+        // 1. Sekme Yönetimi
+        window.showSection = (id) => {
+            document.querySelectorAll('#app > section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        };
 
-            // 1. Giriş yapmış müdürün bilgilerini ve okulunu al
+        // 2. Dashboard Verilerini Yükle
+        async function initDashboard() {
             const { data: { user } } = await supabase.auth.getUser();
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('school_id')
-                .eq('id', user.id)
+            if (!user) return;
+
+            const { data: principal } = await supabase
+                .from("principals")
+                .select("school_id")
+                .eq("user_id", user.id)
                 .single();
 
-            if (!profile?.school_id) {
-                return alert("Hata: Okulunuz tanımlı değil. Lütfen admin ile iletişime geçin.");
-            }
+            if (!principal) return;
+            const schoolId = principal.school_id;
 
-            const schoolId = profile.school_id;
+            // İstatistikler
+            const { count: studentCount } = await supabase.from("students").select("*", { count: "exact", head: true }).eq("school_id", schoolId);
+            const { count: teacherCount, data: teacherData } = await supabase.from("teachers").select("*", { count: "exact" }).eq("school_id", schoolId);
+            const { count: examCount } = await supabase.from("exams").select("*", { count: "exact", head: true }).eq("school_id", schoolId).eq("status", "pending");
 
-            // 2. CSV dosyasını oku ve işle
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const lines = e.target.result.split('\n');
-                let count = 0;
+            document.getElementById("studentCount").textContent = studentCount || 0;
+            document.getElementById("teacherCount").textContent = teacherCount || 0;
+            document.getElementById("pendingExams").textContent = examCount || 0;
 
-                for (let line of lines) {
-                    const [full_name, class_branch] = line.split(',');
-                    if (!full_name || !class_branch) continue;
+            // Öğretmen Listesi
+            document.getElementById("teacherTable").innerHTML = teacherData?.length
+                ? teacherData.map(t => `<tr class="border-b border-gray-800"><td class="p-4">${t.email}</td><td class="p-4 text-right"><button onclick="delTeacher('${t.id}')" class="text-red-500 font-bold hover:text-red-400">SİL</button></td></tr>`).join('')
+                : '<tr><td colspan="2" class="p-4 text-center text-gray-500">Henüz öğretmen yok.</td></tr>';
 
-                    // 3. Öğrenciyi okul ID'si ile 'profiles' tablosuna ekle
-                    const { error } = await supabase.from('profiles').insert([{ 
-                        full_name: full_name.trim(), 
-                        class_branch: class_branch.trim(), 
-                        role: 'student',
-                        school_id: schoolId 
-                    }]);
+            // Audit Logs
+            const { data: logs } = await supabase.from("audit_logs").select("*").eq("school_id", schoolId).order("created_at", { ascending: false }).limit(10);
+            document.getElementById("auditLogList").innerHTML = logs?.length
+                ? logs.map(l => `<div class="p-4 bg-gray-800 rounded-lg border border-gray-700"><p class="text-blue-300 font-bold">${l.action}</p><p class="text-gray-400 text-sm">${new Date(l.created_at).toLocaleString()}</p></div>`).join('')
+                : '<p class="text-gray-500 text-center">Henüz işlem kaydı yok.</p>';
+        }
 
-                    if (!error) count++;
+        // 3. Öğrenci Yükleme (CSV)
+        window.uploadStudents = async () => {
+            const file = document.getElementById("csvFile").files[0];
+            if (!file) return alert("Dosya seçilmedi!");
+
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: async (results) => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const { data: principal } = await supabase.from("principals").select("school_id").eq("user_id", user.id).single();
+                    const formatted = results.data.map(s => ({ name: s.name, class: s.class, school_id: principal.school_id }));
+                    const { error } = await supabase.from("students").insert(formatted);
+                    if (error) alert("Hata: " + error.message);
+                    else { alert("Başarıyla yüklendi!"); initDashboard(); }
                 }
-                alert(count + " öğrenci okulunuza başarıyla eklendi!");
-            };
-            reader.readAsText(fileInput.files[0]);
+            });
         };
+
+        // 4. Öğretmen Ekleme/Silme
+        window.addTeacher = async () => {
+            const email = document.getElementById("teacherEmail").value;
+            if (!email) return alert("E-posta boş!");
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: principal } = await supabase.from("principals").select("school_id").eq("user_id", user.id).single();
+            const { error } = await supabase.from("teachers").insert({ email, school_id: principal.school_id, role: "teacher" });
+            if (error) alert("Hata: " + error.message);
+            else { alert("Yetkilendirildi!"); initDashboard(); }
+        };
+
+        window.delTeacher = async (id) => {
+            if (!confirm("Emin misin?")) return;
+            const { error } = await supabase.from("teachers").delete().eq("id", id);
+            if (error) alert("Hata: " + error.message);
+            else initDashboard();
+        };
+
+        initDashboard();
     </script>
 </body>
 </html>

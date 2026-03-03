@@ -10,23 +10,24 @@
     <div class="max-w-6xl mx-auto">
         <h1 class="text-3xl font-bold text-blue-500 mb-8">ANALİZ PRO v19 | MASTER ADMIN</h1>
 
-        <!-- Okul Ekle -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 mb-8 flex gap-4">
             <input id="schoolName" placeholder="Yeni Okul Adı..." class="flex-1 bg-black p-3 rounded-lg border border-gray-700 outline-none">
             <button onclick="addSchool()" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-lg font-bold">EKLE</button>
         </div>
 
-        <!-- Okul Listesi -->
         <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden mb-10">
             <table class="w-full text-left">
                 <thead class="bg-gray-800 text-gray-400 text-xs uppercase">
-                    <tr><th class="p-4">Okul Adı</th><th class="p-4">İşlem</th></tr>
+                    <tr>
+                        <th class="p-4">Okul Adı</th>
+                        <th class="p-4">Davet Kodu</th>
+                        <th class="p-4">İşlem</th>
+                    </tr>
                 </thead>
                 <tbody id="schoolTable"></tbody>
             </table>
         </div>
 
-        <!-- Audit Log -->
         <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
             <h2 class="p-4 text-blue-400 font-bold">Sistem Günlüğü</h2>
             <table class="w-full text-left">
@@ -42,36 +43,31 @@
     <script type="module">
         import { supabase } from './supabaseClient.js';
 
-        // Detayları okunabilir hale getiren formatlayıcı
         window.formatLog = (details) => {
             try {
                 const obj = typeof details === 'string' ? JSON.parse(details) : details;
                 return Object.entries(obj).map(([k,v]) => `${k}: ${v}`).join(' | ');
-            } catch {
-                return details;
-            }
+            } catch { return details; }
         };
 
         async function load() {
             // Okul listesi
-            const { data: schools, error: schoolError } = await supabase.from('schools').select('*');
-            if (schoolError) {
-                Toastify({ text: "Okul yükleme hatası: " + schoolError.message, style: { background: "#dc2626" } }).showToast();
-            }
+            const { data: schools } = await supabase.from('schools').select('*');
             document.getElementById('schoolTable').innerHTML = schools?.length
                 ? schools.map(s => `
                     <tr class="border-b border-gray-800">
                         <td class="p-4">${s.name}</td>
-                        <td class="p-4"><button onclick="delSchool('${s.id}')" class="text-red-500">SİL</button></td>
+                        <td class="p-4 text-blue-400 font-bold font-mono cursor-pointer hover:text-blue-300 transition" 
+                            onclick="navigator.clipboard.writeText('${s.invite_code || ''}'); Toastify({text: 'Kod kopyalandı!', style: {background: '#2563eb'}}).showToast();">
+                            ${s.invite_code || '—'}
+                        </td>
+                        <td class="p-4"><button onclick="delSchool('${s.id}')" class="text-red-500 hover:text-red-400">SİL</button></td>
                     </tr>
                 `).join('')
-                : '<tr><td colspan="2" class="p-4 text-center">Henüz okul eklenmedi.</td></tr>';
+                : '<tr><td colspan="3" class="p-4 text-center">Henüz okul eklenmedi.</td></tr>';
 
-            // Audit log
-            const { data: logs, error: logError } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(5);
-            if (logError) {
-                Toastify({ text: "Log yükleme hatası: " + logError.message, style: { background: "#dc2626" } }).showToast();
-            }
+            // Loglar
+            const { data: logs } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(5);
             document.getElementById('logTable').innerHTML = logs?.length
                 ? logs.map(l => `
                     <tr class="border-b border-gray-800">
@@ -85,25 +81,19 @@
 
         window.addSchool = async () => {
             const name = document.getElementById('schoolName').value.trim();
-            if (!name) {
-                Toastify({ text: "Okul adı boş olamaz!", style: { background: "#dc2626" } }).showToast();
-                return;
-            }
-            const { error } = await supabase.from('schools').insert({ name });
-            if (error) {
-                Toastify({ text: "Ekleme hatası: " + error.message, style: { background: "#dc2626" } }).showToast();
-                return;
-            }
-            Toastify({ text: "Okul eklendi!", style: { background: "#16a34a" } }).showToast();
+            if (!name) return;
+            const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            const { error } = await supabase.from('schools').insert({ name, invite_code: inviteCode });
+            if (error) return Toastify({ text: "Hata: " + error.message, style: { background: "#dc2626" } }).showToast();
+            
+            Toastify({ text: "Okul eklendi! Kod: " + inviteCode, style: { background: "#16a34a" } }).showToast();
+            document.getElementById('schoolName').value = '';
             setTimeout(load, 500);
         };
 
         window.delSchool = async (id) => {
-            const { error } = await supabase.from('schools').delete().eq('id', id);
-            if (error) {
-                Toastify({ text: "Silme hatası: " + error.message, style: { background: "#dc2626" } }).showToast();
-                return;
-            }
+            await supabase.from('schools').delete().eq('id', id);
             Toastify({ text: "Okul silindi!", style: { background: "#dc2626" } }).showToast();
             setTimeout(load, 500);
         };
